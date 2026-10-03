@@ -4,19 +4,30 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE || (
     : 'https://farsi-news-production.up.railway.app'
 )
 
-export async function requestNews({ page = 1, pageSize = 10, signal } = {}) {
+export async function requestNews({
+  page = 1,
+  pageSize = 10,
+  signal,
+} = {}) {
   const params = new URLSearchParams({
     page: String(page),
     page_size: String(pageSize),
   })
 
-  const response = await fetch(`${API_BASE_URL}/news/?${params}`, {
-    headers: { Accept: 'application/json' },
-    signal,
-  })
+  const response = await fetch(
+    `${API_BASE_URL}/news/?${params}`,
+    {
+      headers: {
+        Accept: 'application/json',
+      },
+      signal,
+    },
+  )
 
   if (!response.ok) {
-    throw new Error(`News request failed with status ${response.status}`)
+    throw new Error(
+      `News request failed with status ${response.status}`,
+    )
   }
 
   const payload = await response.json()
@@ -29,8 +40,13 @@ export async function requestNews({ page = 1, pageSize = 10, signal } = {}) {
     }
   }
 
-  if (!payload || !Array.isArray(payload.results)) {
-    throw new Error('The news API returned an unexpected response.')
+  if (
+    !payload ||
+    !Array.isArray(payload.results)
+  ) {
+    throw new Error(
+      'The news API returned an unexpected response.',
+    )
   }
 
   return {
@@ -38,7 +54,9 @@ export async function requestNews({ page = 1, pageSize = 10, signal } = {}) {
     totalCount: Number.isInteger(payload.count)
       ? payload.count
       : payload.results.length,
-    nextPage: Number.isInteger(payload.next_page)
+    nextPage: Number.isInteger(
+      payload.next_page,
+    )
       ? payload.next_page
       : null,
   }
