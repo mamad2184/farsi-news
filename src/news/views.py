@@ -1,9 +1,12 @@
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Article
-from .serializers import ArticleSerializer
+from .models import News
+from .serializers import NewsListSerializer, NewsDetailsSerializer
 
 
 class NewsPagination(PageNumberPagination):
@@ -11,15 +14,21 @@ class NewsPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
-
 class NewsListView(APIView):
     def get(self, request):
-        articles = Article.objects.order_by("-published_at")
+        query = request.query_params.get("q", "").strip()
+
+        news = News.objects.filter(
+            published_at__lte=timezone.now()
+        ).order_by("-published_at")
+
+        if query:
+            news = news.filter(title__icontains=query)
 
         paginator = NewsPagination()
-        page = paginator.paginate_queryset(articles, request)
+        page = paginator.paginate_queryset(news, request)
 
-        serializer = ArticleSerializer(page, many=True)
+        serializer = NewsListSerializer(page, many=True)
 
         return Response({
             "count": paginator.page.paginator.count,
@@ -30,3 +39,18 @@ class NewsListView(APIView):
                 else None
             ),
         })
+
+
+class NewsDetailsView(APIView):
+    def get(self, request, pk):
+        news = get_object_or_404(News, pk=pk)
+
+        serializer = NewsDetailsSerializer(news)
+
+        return Response(serializer.data)
+
+
+
+
+class SerachNewsViews(APIView):
+    pass

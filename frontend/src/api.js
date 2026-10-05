@@ -7,12 +7,17 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE || (
 export async function requestNews({
   page = 1,
   pageSize = 10,
+  query = '',
   signal,
 } = {}) {
   const params = new URLSearchParams({
     page: String(page),
     page_size: String(pageSize),
   })
+
+  if (query.trim()) {
+    params.set('q', query.trim())
+  }
 
   const response = await fetch(
     `${API_BASE_URL}/news/?${params}`,
@@ -60,6 +65,26 @@ export async function requestNews({
       ? payload.next_page
       : null,
   }
+}
+
+export async function requestNewsDetails(id, { signal } = {}) {
+  const response = await fetch(
+    `${API_BASE_URL}/news/${encodeURIComponent(id)}/`,
+    {
+      headers: {
+        Accept: 'application/json',
+      },
+      signal,
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      `News detail request failed with status ${response.status}`,
+    )
+  }
+
+  return response.json()
 }
 
 export { API_BASE_URL }

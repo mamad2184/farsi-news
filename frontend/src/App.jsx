@@ -16,7 +16,11 @@ import {
   Sun,
   X,
 } from 'lucide-react'
-import { API_BASE_URL, requestNews } from './api'
+import {
+  API_BASE_URL,
+  requestNews,
+  requestNewsDetails,
+} from './api'
 import './App.css'
 
 const SAVED_ARTICLES_KEY = 'farsinews:saved-articles'
@@ -24,6 +28,10 @@ const NEWS_CACHE_KEY = 'farsinews:latest-news'
 const THEME_STORAGE_KEY = 'farsinews:theme'
 const NEWS_PAGE_SIZE = 10
 const ISSUE_DATE = new Date()
+
+const ARTICLE_RELATIVE_TIME_FORMATTER = new Intl.RelativeTimeFormat('fa-IR', {
+  numeric: 'always',
+})
 
 const ARTICLE_DATE_FORMATTER = new Intl.DateTimeFormat('fa-IR', {
   dateStyle: 'medium',
@@ -62,7 +70,9 @@ function readNewsCache() {
           article &&
           article.id != null &&
           article.title &&
-          article.url,
+          article.url &&
+          (!Number.isFinite(Date.parse(article.published_at)) ||
+            Date.parse(article.published_at) <= Date.now()),
       )
       .slice(0, NEWS_PAGE_SIZE)
 
@@ -155,6 +165,39 @@ function readTheme() {
   }
 }
 
+function formatRelativeDate(value) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'زمان نامشخص'
+  }
+
+  const differenceInSeconds =
+    (date.getTime() - Date.now()) / 1000
+  const absoluteDifference = Math.abs(differenceInSeconds)
+
+  if (absoluteDifference < 60) {
+    return 'همین الان'
+  }
+
+  const units = [
+    { limit: 60 * 60, seconds: 60, unit: 'minute' },
+    { limit: 24 * 60 * 60, seconds: 60 * 60, unit: 'hour' },
+    { limit: 7 * 24 * 60 * 60, seconds: 24 * 60 * 60, unit: 'day' },
+    { limit: 30 * 24 * 60 * 60, seconds: 7 * 24 * 60 * 60, unit: 'week' },
+    { limit: 365 * 24 * 60 * 60, seconds: 30 * 24 * 60 * 60, unit: 'month' },
+    { limit: Infinity, seconds: 365 * 24 * 60 * 60, unit: 'year' },
+  ]
+  const { seconds, unit } = units.find(
+    (relativeUnit) => absoluteDifference < relativeUnit.limit,
+  )
+
+  return ARTICLE_RELATIVE_TIME_FORMATTER.format(
+    Math.round(differenceInSeconds / seconds),
+    unit,
+  )
+}
+
 function formatDate(value) {
   const date = new Date(value)
 
@@ -201,6 +244,7 @@ function StoryMeta({
   article,
   isSaved,
   onToggleSaved,
+  relativeTime = false,
 }) {
   return (
     <div className="story-meta">
@@ -212,7 +256,9 @@ function StoryMeta({
         <Clock3 size={14} aria-hidden="true" />
 
         <time dateTime={article.published_at}>
-          {formatDate(article.published_at)}
+          {relativeTime
+            ? formatRelativeDate(article.published_at)
+            : formatDate(article.published_at)}
         </time>
       </span>
 
@@ -275,6 +321,7 @@ function StoryCard({
           article={article}
           isSaved={isSaved}
           onToggleSaved={onToggleSaved}
+          relativeTime
         />
 
         <h3>
@@ -341,6 +388,7 @@ function App() {
     useState('')
 
   const [query, setQuery] = useState('')
+  const [loadedQuery, setLoadedQuery] = useState('')
   const [selectedSource, setSelectedSource] =
     useState('همه')
 
@@ -350,10 +398,17 @@ function App() {
   const [selectedArticle, setSelectedArticle] =
     useState(null)
 
+  const [isLoadingDetails, setIsLoadingDetails] =
+    useState(false)
+
+  const [detailError, setDetailError] =
+    useState('')
+
   const [shareStatus, setShareStatus] = useState('')
   const [theme, setTheme] = useState(readTheme)
 
   const previousFocusRef = useRef(null)
+  const detailRequestRef = useRef(null)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -389,56 +444,68 @@ function App() {
   }, [savedArticles])
 
   useEffect(() => {
+    if (activeView !== 'latest') return undefined
+
     const controller = new AbortController()
+    const searchQuery = query.trim()
 
-    requestNews({
-      page: 1,
-      pageSize: NEWS_PAGE_SIZE,
-      signal: controller.signal,
-    })
-      .then((data) => {
-        const firstPageArticles =
-          data.articles.slice(0, NEWS_PAGE_SIZE)
-
-        const resolvedNextPage =
-          Number.isInteger(data.nextPage)
-            ? data.nextPage
-            : firstPageArticles.length <
-                data.totalCount
-              ? 2
-              : null
-
-        setArticles(firstPageArticles)
-        setTotalCount(data.totalCount)
-        setNextPage(resolvedNextPage)
-
-        setLastUpdated(
-          storeNewsCache(
-            firstPageArticles,
-            data.totalCount,
-            resolvedNextPage,
-          ),
-        )
-
-        setError('')
+    const timeout = window.setTimeout(() => {
+      requestNews({
+        page: 1,
+        pageSize: NEWS_PAGE_SIZE,
+        query: searchQuery,
+        signal: controller.signal,
       })
-      .catch((requestError) => {
-        if (
-          requestError.name !== 'AbortError'
-        ) {
-          setError(
-            'دریافت خبرها انجام نشد. اتصال به سرور خبر را بررسی کنید.',
-          )
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setIsLoading(false)
-        }
-      })
+        .then((data) => {
+          const firstPageArticles =
+            data.articles.slice(0, NEWS_PAGE_SIZE)
 
-    return () => controller.abort()
-  }, [])
+          const resolvedNextPage =
+            Number.isInteger(data.nextPage)
+              ? data.nextPage
+              : firstPageArticles.length <
+                  data.totalCount
+                ? 2
+                : null
+
+          setArticles(firstPageArticles)
+          setTotalCount(data.totalCount)
+          setNextPage(resolvedNextPage)
+          setLoadedQuery(searchQuery)
+
+          if (!searchQuery) {
+            setLastUpdated(
+              storeNewsCache(
+                firstPageArticles,
+                data.totalCount,
+                resolvedNextPage,
+              ),
+            )
+          }
+
+          setError('')
+        })
+        .catch((requestError) => {
+          if (
+            requestError.name !== 'AbortError'
+          ) {
+            setError(
+              'دریافت خبرها انجام نشد. اتصال به سرور خبر را بررسی کنید.',
+            )
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) {
+            setIsLoading(false)
+          }
+        })
+    }, searchQuery ? 300 : 0)
+
+    return () => {
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [activeView, query])
 
   useEffect(() => {
     if (!selectedArticle) return undefined
@@ -450,7 +517,7 @@ function App() {
 
     function handleReaderKeys(event) {
       if (event.key === 'Escape') {
-        setSelectedArticle(null)
+        closeReader()
         return
       }
 
@@ -509,6 +576,7 @@ function App() {
       const data = await requestNews({
         page: 1,
         pageSize: NEWS_PAGE_SIZE,
+        query: activeView === 'latest' ? query : '',
       })
 
       const firstPageArticles =
@@ -525,14 +593,19 @@ function App() {
       setArticles(firstPageArticles)
       setTotalCount(data.totalCount)
       setNextPage(resolvedNextPage)
-
-      setLastUpdated(
-        storeNewsCache(
-          firstPageArticles,
-          data.totalCount,
-          resolvedNextPage,
-        ),
+      setLoadedQuery(
+        activeView === 'latest' ? query.trim() : '',
       )
+
+      if (activeView !== 'latest' || !query.trim()) {
+        setLastUpdated(
+          storeNewsCache(
+            firstPageArticles,
+            data.totalCount,
+            resolvedNextPage,
+          ),
+        )
+      }
     } catch {
       setError(
         'به‌روزرسانی خبرها ناموفق بود. کمی بعد دوباره تلاش کنید.',
@@ -559,6 +632,7 @@ function App() {
       const data = await requestNews({
         page: nextPage,
         pageSize: NEWS_PAGE_SIZE,
+        query: query.trim(),
       })
 
       const knownIds = new Set(
@@ -626,16 +700,53 @@ function App() {
 
   function changeView(view) {
     setActiveView(view)
+    setIsLoading(view === 'latest')
     setSelectedSource('همه')
     setQuery('')
   }
 
   function openReader(article) {
+    detailRequestRef.current?.abort()
+
+    const controller = new AbortController()
+    detailRequestRef.current = controller
+
     previousFocusRef.current =
       document.activeElement
 
     setShareStatus('')
     setSelectedArticle(article)
+    setDetailError('')
+    setIsLoadingDetails(true)
+
+    requestNewsDetails(article.id, {
+      signal: controller.signal,
+    })
+      .then((details) => {
+        setSelectedArticle((current) =>
+          String(current?.id) === String(article.id)
+            ? details
+            : current,
+        )
+      })
+      .catch((requestError) => {
+        if (requestError.name !== 'AbortError') {
+          setDetailError(
+            'جزئیات خبر دریافت نشد. می‌توانید متن کامل را در منبع اصلی بخوانید.',
+          )
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingDetails(false)
+        }
+      })
+  }
+
+  function closeReader() {
+    detailRequestRef.current?.abort()
+    setSelectedArticle(null)
+    setIsLoadingDetails(false)
   }
 
   async function shareArticle() {
@@ -684,31 +795,29 @@ function App() {
     ),
   ]
 
-  const normalizedQuery = query
-    .trim()
-    .toLocaleLowerCase('fa')
-
   const filteredArticles =
     viewArticles.filter((article) => {
       const matchesSource =
         selectedSource === 'همه' ||
         article.source === selectedSource
 
-      const searchable =
-        `${article.title} ${
-          article.description || ''
-        } ${article.source || ''}`.toLocaleLowerCase(
-          'fa',
-        )
-
       return (
         matchesSource &&
-        searchable.includes(normalizedQuery)
+        (activeView === 'latest' ||
+          `${article.title} ${
+            article.description || ''
+          } ${article.source || ''}`
+            .toLocaleLowerCase('fa')
+            .includes(query.trim().toLocaleLowerCase('fa')))
       )
     })
 
   const featuredArticle =
     filteredArticles[0]
+
+  const isSearchPending =
+    activeView === 'latest' &&
+    query.trim() !== loadedQuery
 
   const remainingArticles =
     filteredArticles.slice(1)
@@ -1026,12 +1135,18 @@ function App() {
               <input
                 type="search"
                 value={query}
-                onChange={(event) =>
+                onChange={(event) => {
+                  if (activeView === 'latest') {
+                    setIsLoading(true)
+                  }
+
                   setQuery(
                     event.target.value,
                   )
-                }
-                placeholder="جست‌وجو در عنوان و متن خبر"
+                }}
+                placeholder={activeView === 'latest'
+                  ? 'جست‌وجو در خبرها'
+                  : 'جست‌وجو در نشان‌شده‌ها'}
                 aria-label="جست‌وجو در خبرها"
               />
 
@@ -1090,7 +1205,7 @@ function App() {
 
           {activeView === 'latest' &&
           isLoading &&
-          articles.length === 0 ? (
+          (articles.length === 0 || isSearchPending) ? (
             <div
               className="loading-state"
               aria-live="polite"
@@ -1100,7 +1215,9 @@ function App() {
               <span className="loading-line loading-line-short" />
 
               <span className="loading-caption">
-                در حال دریافت خبرهای امروز…
+                {query.trim()
+                  ? 'در حال جست‌وجوی خبرها…'
+                  : 'در حال دریافت خبرهای امروز…'}
               </span>
             </div>
           ) : null}
@@ -1108,7 +1225,8 @@ function App() {
           {!isLoading &&
           !error &&
           activeView === 'latest' &&
-          articles.length === 0 ? (
+          articles.length === 0 &&
+          !query.trim() ? (
             <div className="empty-state">
               <Newspaper
                 size={30}
@@ -1157,8 +1275,12 @@ function App() {
           ) : null}
 
           {!isLoading &&
-          viewArticles.length > 0 &&
-          filteredArticles.length === 0 ? (
+          ((activeView === 'latest' &&
+            query.trim() &&
+            articles.length === 0) ||
+            (activeView === 'saved' &&
+              viewArticles.length > 0 &&
+              filteredArticles.length === 0)) ? (
             <div className="empty-state">
               <Search
                 size={28}
@@ -1174,7 +1296,7 @@ function App() {
             </div>
           ) : null}
 
-          {featuredArticle ? (
+          {featuredArticle && !isSearchPending ? (
             <div
               className="stories"
               aria-live="polite"
@@ -1309,7 +1431,7 @@ function App() {
               event.target ===
               event.currentTarget
             ) {
-              setSelectedArticle(null)
+              closeReader()
             }
           }}
         >
@@ -1332,9 +1454,7 @@ function App() {
                 className="reader-close"
                 type="button"
                 autoFocus
-                onClick={() =>
-                  setSelectedArticle(null)
-                }
+                onClick={closeReader}
                 aria-label="بستن پنجره"
               >
                 <X
@@ -1357,6 +1477,16 @@ function App() {
             ) : null}
 
             <div className="reader-body">
+              {isLoadingDetails ? (
+                <p role="status">در حال دریافت جزئیات خبر…</p>
+              ) : null}
+
+              {detailError ? (
+                <p className="share-status" role="status">
+                  {detailError}
+                </p>
+              ) : null}
+
               <StoryMeta
                 article={selectedArticle}
                 isSaved={savedArticles.some(

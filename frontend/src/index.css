@@ -8,14 +8,14 @@
   -moz-osx-font-smoothing: grayscale;
   font-optical-sizing: auto;
   font-weight: 400;
-  --paper: #f4f2ec;
-  --paper-light: #fffefa;
-  --ink: #202725;
-  --muted: #737b77;
-  --line: #dcded7;
-  --forest: #1c4944;
-  --coral: #e4674f;
-  --acid: #e3d879;
+  --paper: #f7f4ef;
+  --paper-light: #fffdf9;
+  --ink: #1d2a28;
+  --muted: #64726e;
+  --line: #e7e0d6;
+  --forest: #234e48;
+  --coral: #d96b49;
+  --acid: #e8d984;
 }
 
 :root[data-theme='dark'] {

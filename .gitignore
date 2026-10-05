@@ -1,7 +1,51 @@
-lx_env/
+not.txt
+
+ # Python
 __pycache__/
 *.py[cod]
-db.sqlite3
-.env
-.venv/
+*.pyo
+*.pyd
+
+# Virtual environments
 venv/
+.venv/
+env/
+ENV/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# Testing / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python tooling
+.mypy_cache/
+.ruff_cache/
+
+# Temporary files
+*.tmp
+*.swp

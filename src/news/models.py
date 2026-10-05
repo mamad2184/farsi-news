@@ -2,7 +2,7 @@ from django.db import models
 
 
 
-class Article(models.Model):
+class News(models.Model):
     external_id = models.CharField(max_length=255, unique=True)
     title = models.TextField()
     description = models.TextField(blank=True, null=True)
@@ -13,3 +13,5 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+
