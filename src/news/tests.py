@@ -81,6 +81,18 @@ class NewsAPITests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["count"], 2)
 
+    def test_news_search_rejects_long_query(self):
+        response = self.client.get(
+            reverse("news-list"),
+            {"q": "x" * 201},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["detail"],
+            "Search query is too long.",
+        )
+
     def test_news_detail_not_found(self):
         response = self.client.get(
             reverse("news-details", args=[999999])
