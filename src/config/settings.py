@@ -3,22 +3,39 @@ import os
 
 from dotenv import load_dotenv
 
- 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR.parent / ".env")
 
+
+# -----------------------------------------------------------------------------
 # Security
+# -----------------------------------------------------------------------------
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-development-only",
+)
 
-DEBUG = True
+DEBUG = os.environ.get(
+    "DJANGO_DEBUG",
+    "False",
+).lower() == "true"
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "localhost,127.0.0.1",
+    ).split(",")
+    if host.strip()
+]
 
 
-# Applications  
+# -----------------------------------------------------------------------------
+# Applications
+# -----------------------------------------------------------------------------
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -27,7 +44,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
     "corsheaders",
     "django_crontab",
@@ -35,7 +51,9 @@ INSTALLED_APPS = [
 ]
 
 
+# -----------------------------------------------------------------------------
 # Middleware
+# -----------------------------------------------------------------------------
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -71,24 +89,31 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
+# -----------------------------------------------------------------------------
 # Database
+# -----------------------------------------------------------------------------
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "neondb",
-        "USER": "neondb_owner",
-        "PASSWORD": os.environ.get("NEON_DB_PASSWORD"),
-        "HOST": "ep-square-forest-b43ko0s7-pooler.c-6.us-east-2.aws.neon.tech",
-        "PORT": "5432",
+        "NAME": os.environ["NEON_DB_NAME"],
+        "USER": os.environ["NEON_DB_USER"],
+        "PASSWORD": os.environ["NEON_DB_PASSWORD"],
+        "HOST": os.environ["NEON_DB_HOST"],
+        "PORT": os.environ.get(
+            "NEON_DB_PORT",
+            "5432",
+        ),
         "OPTIONS": {
             "sslmode": "require",
         },
-    }
+    },
 }
 
 
+# -----------------------------------------------------------------------------
 # Password validation
+# -----------------------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -118,7 +143,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# -----------------------------------------------------------------------------
 # Internationalization
+# -----------------------------------------------------------------------------
 
 LANGUAGE_CODE = "fa"
 
@@ -129,31 +156,60 @@ USE_I18N = True
 USE_TZ = True
 
 
+# -----------------------------------------------------------------------------
 # Static files
+# -----------------------------------------------------------------------------
 
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+# -----------------------------------------------------------------------------
 # Email
+# -----------------------------------------------------------------------------
 
-MAILERS = {
-    "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
-    },
-}
+EMAIL_BACKEND = (
+    "django.core.mail.backends.console.EmailBackend"
+)
 
 
+# -----------------------------------------------------------------------------
 # Scheduled jobs
+# -----------------------------------------------------------------------------
 
 CRONJOBS = [
-    ("*/3 * * * *", "django.core.management.call_command", ["sync_news"]),
+    (
+        "*/3 * * * *",
+        "django.core.management.call_command",
+        ["sync_news"],
+    ),
 ]
 
+
+# -----------------------------------------------------------------------------
+# CORS
+# -----------------------------------------------------------------------------
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:4173",
-    "https://farsi-news.mohamadpykarian.workers.dev",
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173,http://localhost:4173",
+    ).split(",")
+    if origin.strip()
 ]
+
+
+# -----------------------------------------------------------------------------
+# REST Framework
+# -----------------------------------------------------------------------------
+
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+    ],
+}
