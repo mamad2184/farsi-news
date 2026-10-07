@@ -50,7 +50,7 @@ class NewsAPITests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["title"], "خبر اول")
 
-    def test_news_search(self):
+    def test_news_search_by_title(self):
         response = self.client.get(
             reverse("news-list"),
             {"q": "اول"},
@@ -62,6 +62,24 @@ class NewsAPITests(APITestCase):
             response.data["results"][0]["id"],
             self.news_1.id,
         )
+
+    def test_news_search_by_description(self):
+        response = self.client.get(
+            reverse("news-list"),
+            {"q": "توضیحات"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 2)
+
+    def test_news_search_by_source(self):
+        response = self.client.get(
+            reverse("news-list"),
+            {"q": "Example"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 2)
 
     def test_news_detail_not_found(self):
         response = self.client.get(
