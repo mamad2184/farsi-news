@@ -20,6 +20,12 @@ class NewsListView(APIView):
     def get(self, request):
         query = request.query_params.get("q", "").strip()
 
+        if len(query) > 200:
+            return Response(
+                {"detail": "Search query is too long."},
+                status=400,
+            )
+
         news = News.objects.filter(
             published_at__lte=timezone.now()
         ).order_by("-published_at")
