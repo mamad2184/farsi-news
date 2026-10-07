@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -24,7 +25,11 @@ class NewsListView(APIView):
         ).order_by("-published_at")
 
         if query:
-            news = news.filter(title__icontains=query)
+            news = news.filter(
+                Q(title__icontains=query)
+                | Q(description__icontains=query)
+                | Q(source__icontains=query)
+            )
 
         paginator = NewsPagination()
         page = paginator.paginate_queryset(news, request)
