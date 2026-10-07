@@ -42,6 +42,25 @@ class NewsAPITests(APITestCase):
         self.assertEqual(response.data["count"], 2)
         self.assertEqual(len(response.data["results"]), 2)
 
+    def test_news_list_with_page_size(self):
+        response = self.client.get(
+            reverse("news-list"),
+            {"page_size": 1},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertIsNotNone(response.data["next_page"])
+
+    def test_news_list_page_out_of_range(self):
+        response = self.client.get(
+            reverse("news-list"),
+            {"page": 999},
+        )
+
+        self.assertEqual(response.status_code, 404)
+
     def test_news_detail(self):
         response = self.client.get(
             reverse("news-details", args=[self.news_1.id])
