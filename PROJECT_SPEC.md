@@ -430,6 +430,8 @@ The list endpoint supports:
 page
 page_size
 q
+from
+to
 ```
 
 News should normally be returned newest first:
@@ -441,6 +443,35 @@ published_at DESC
 Pagination must have a maximum page size.
 
 The backend must not allow clients to request unlimited rows.
+
+### Time-window filter
+
+The list endpoint supports an optional publication-time window using `published_at`.
+
+Query parameters:
+
+```text
+from  YYYY-MM-DD
+to    YYYY-MM-DD
+```
+
+Behavior:
+
+```text
+only from     → published_at on or after from
+from + to     → published_at between from and to inclusive
+only to       → published_at on or before to
+neither       → normal latest news (no time-window restriction)
+```
+
+Rules:
+
+* Dates must use `YYYY-MM-DD`
+* Invalid dates must return `400`
+* If both are present and `from` is later than `to`, return `400`
+* Filtering is by calendar date of `published_at`, not by free-text search
+* Future-dated articles must still be excluded by the existing `published_at <= now` rule
+* This filter is additive with `q`, pagination, and ordering
 
 ---
 
@@ -694,6 +725,9 @@ Important backend tests should cover:
 * list endpoint
 * pagination
 * search
+* time-window filter (`from` only, `to` only, `from`+`to`, neither)
+* invalid `from` / `to` dates
+* `from` later than `to`
 * detail endpoint
 * missing article
 * ordering

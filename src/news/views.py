@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -19,10 +21,71 @@ class NewsPagination(PageNumberPagination):
 class NewsListView(APIView):
     def get(self, request):
         query = request.query_params.get("q", "").strip()
+        source = request.query_params.get("source", "").strip()
+        from_date = request.query_params.get("from", "").strip()
+        to_date = request.query_params.get("to", "").strip()
 
         if len(query) > 200:
             return Response(
                 {"detail": "Search query is too long."},
+                status=400,
+            )
+
+        if len(source) > 200:
+            return Response(
+                {"detail": "Source is too long."},
+                status=400,
+            )
+
+        parsed_from_date = None
+        parsed_to_date = None
+
+        if from_date:
+            try:
+                parsed_from_date = datetime.strptime(
+                    from_date,
+                    "%Y-%m-%d",
+                ).date()
+            except ValueError:
+                return Response(
+                    {
+                        "detail": (
+                            "Invalid 'from' date. "
+                            "Use YYYY-MM-DD."
+                        )
+                    },
+                    status=400,
+                )
+
+        if to_date:
+            try:
+                parsed_to_date = datetime.strptime(
+                    to_date,
+                    "%Y-%m-%d",
+                ).date()
+            except ValueError:
+                return Response(
+                    {
+                        "detail": (
+                            "Invalid 'to' date. "
+                            "Use YYYY-MM-DD."
+                        )
+                    },
+                    status=400,
+                )
+
+        if (
+            parsed_from_date
+            and parsed_to_date
+            and parsed_from_date > parsed_to_date
+        ):
+            return Response(
+                {
+                    "detail": (
+                        "'from' date cannot be later than "
+                        "'to' date."
+                    )
+                },
                 status=400,
             )
 
@@ -35,6 +98,21 @@ class NewsListView(APIView):
                 Q(title__icontains=query)
                 | Q(description__icontains=query)
                 | Q(source__icontains=query)
+            )
+
+        if source:
+            news = news.filter(
+                source__icontains=source
+            )
+
+        if parsed_from_date:
+            news = news.filter(
+                published_at__date__gte=parsed_from_date
+            )
+
+        if parsed_to_date:
+            news = news.filter(
+                published_at__date__lte=parsed_to_date
             )
 
         paginator = NewsPagination()
@@ -64,3 +142,10 @@ class NewsDetailsView(APIView):
         serializer = NewsDetailsSerializer(news)
 
         return Response(serializer.data)
+
+
+class HealthCheckView(APIView):
+    def get(self, request):
+        return Response({
+            "status": "ok",
+        })

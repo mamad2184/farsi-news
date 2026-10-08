@@ -112,12 +112,162 @@ class NewsAPITests(APITestCase):
             "Search query is too long.",
         )
 
+    def test_news_list_from_only(self):
+        older = News.objects.create(
+            external_id="test-old",
+            title="خبر قدیمی",
+            description="توضیحات",
+            url="https://example.com/old",
+            image="https://example.com/old.jpg",
+            source="Example",
+            published_at=timezone.now() - timedelta(days=5),
+            crawled_at=timezone.now() - timedelta(days=5),
+        )
+
+        from_date = (
+            timezone.now() - timedelta(days=1)
+        ).date().isoformat()
+
+        response = self.client.get(
+            reverse("news-list"),
+            {"from": from_date},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        ids = [
+            item["id"]
+            for item in response.data["results"]
+        ]
+
+        self.assertIn(self.news_1.id, ids)
+        self.assertIn(self.news_2.id, ids)
+        self.assertNotIn(older.id, ids)
+
+    def test_news_list_to_only(self):
+        older = News.objects.create(
+            external_id="test-old-to",
+            title="خبر قدیمی",
+            description="توضیحات",
+            url="https://example.com/old-to",
+            image="https://example.com/old-to.jpg",
+            source="Example",
+            published_at=timezone.now() - timedelta(days=5),
+            crawled_at=timezone.now() - timedelta(days=5),
+        )
+
+        to_date = (
+            timezone.now() - timedelta(days=2)
+        ).date().isoformat()
+
+        response = self.client.get(
+            reverse("news-list"),
+            {"to": to_date},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        ids = [
+            item["id"]
+            for item in response.data["results"]
+        ]
+
+        self.assertIn(older.id, ids)
+        self.assertNotIn(self.news_1.id, ids)
+        self.assertNotIn(self.news_2.id, ids)
+
+    def test_news_list_from_and_to(self):
+        mid = News.objects.create(
+            external_id="test-mid",
+            title="خبر میانی",
+            description="توضیحات",
+            url="https://example.com/mid",
+            image="https://example.com/mid.jpg",
+            source="Example",
+            published_at=timezone.now() - timedelta(days=3),
+            crawled_at=timezone.now() - timedelta(days=3),
+        )
+
+        News.objects.create(
+            external_id="test-older",
+            title="خبر خیلی قدیمی",
+            description="توضیحات",
+            url="https://example.com/older",
+            image="https://example.com/older.jpg",
+            source="Example",
+            published_at=timezone.now() - timedelta(days=10),
+            crawled_at=timezone.now() - timedelta(days=10),
+        )
+
+        from_date = (
+            timezone.now() - timedelta(days=4)
+        ).date().isoformat()
+
+        to_date = (
+            timezone.now() - timedelta(days=2)
+        ).date().isoformat()
+
+        response = self.client.get(
+            reverse("news-list"),
+            {
+                "from": from_date,
+                "to": to_date,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        ids = [
+            item["id"]
+            for item in response.data["results"]
+        ]
+
+        self.assertEqual(ids, [mid.id])
+
+    def test_news_list_rejects_from_after_to(self):
+        response = self.client.get(
+            reverse("news-list"),
+            {
+                "from": "2026-10-08",
+                "to": "2026-10-01",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["detail"],
+            "'from' date cannot be later than 'to' date.",
+        )
+
+    def test_news_list_rejects_invalid_from(self):
+        response = self.client.get(
+            reverse("news-list"),
+            {"from": "08-10-2026"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["detail"],
+            "Invalid 'from' date. Use YYYY-MM-DD.",
+        )
+
     def test_news_detail_not_found(self):
         response = self.client.get(
             reverse("news-details", args=[999999])
         )
 
         self.assertEqual(response.status_code, 404)
+
+    def test_health_check(self):
+        response = self.client.get(
+            reverse("health-check")
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data,
+            {"status": "ok"},
+        )
 
 
 class SyncNewsTests(APITestCase):
