@@ -1,0 +1,37 @@
+
+name: Sync News
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Sync production news
+        working-directory: src
+        env:
+          NEON_DB_NAME: ${{ secrets.NEON_DB_NAME }}
+          NEON_DB_USER: ${{ secrets.NEON_DB_USER }}
+          NEON_DB_PASSWORD: ${{ secrets.NEON_DB_PASSWORD }}
+          NEON_DB_HOST: ${{ secrets.NEON_DB_HOST }}
+          NEON_DB_PORT: ${{ secrets.NEON_DB_PORT }}
+        run: python manage.py sync_news
