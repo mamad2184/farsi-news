@@ -6,8 +6,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE || (
 
 export async function requestNews({
   page = 1,
-  pageSize = 10,
+  pageSize = 50,
   query = '',
+  source = '',
+  from = '',
+  to = '',
   signal,
 } = {}) {
   const params = new URLSearchParams({
@@ -15,8 +18,25 @@ export async function requestNews({
     page_size: String(pageSize),
   })
 
-  if (query.trim()) {
-    params.set('q', query.trim())
+  const normalizedQuery = query.trim()
+  const normalizedSource = source.trim()
+  const normalizedFrom = from.trim()
+  const normalizedTo = to.trim()
+
+  if (normalizedQuery) {
+    params.set('q', normalizedQuery)
+  }
+
+  if (normalizedSource) {
+    params.set('source', normalizedSource)
+  }
+
+  if (normalizedFrom) {
+    params.set('from', normalizedFrom)
+  }
+
+  if (normalizedTo) {
+    params.set('to', normalizedTo)
   }
 
   const response = await fetch(
@@ -67,7 +87,10 @@ export async function requestNews({
   }
 }
 
-export async function requestNewsDetails(id, { signal } = {}) {
+export async function requestNewsDetails(
+  id,
+  { signal } = {},
+) {
   const response = await fetch(
     `${API_BASE_URL}/news/${encodeURIComponent(id)}/`,
     {

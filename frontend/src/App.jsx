@@ -26,28 +26,32 @@ import './App.css'
 const SAVED_ARTICLES_KEY = 'farsinews:saved-articles'
 const NEWS_CACHE_KEY = 'farsinews:latest-news'
 const THEME_STORAGE_KEY = 'farsinews:theme'
-const NEWS_PAGE_SIZE = 10
+const NEWS_PAGE_SIZE = 50
 const ISSUE_DATE = new Date()
 
-const ARTICLE_RELATIVE_TIME_FORMATTER = new Intl.RelativeTimeFormat('fa-IR', {
-  numeric: 'always',
-})
+const ARTICLE_RELATIVE_TIME_FORMATTER =
+  new Intl.RelativeTimeFormat('fa-IR', {
+    numeric: 'always',
+  })
 
-const ARTICLE_DATE_FORMATTER = new Intl.DateTimeFormat('fa-IR', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: 'Asia/Tehran',
-})
+const ARTICLE_DATE_FORMATTER =
+  new Intl.DateTimeFormat('fa-IR', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Tehran',
+  })
 
-const ARTICLE_INDEX_FORMATTER = new Intl.NumberFormat('fa-IR', {
-  minimumIntegerDigits: 2,
-})
+const ARTICLE_INDEX_FORMATTER =
+  new Intl.NumberFormat('fa-IR', {
+    minimumIntegerDigits: 2,
+  })
 
-const UPDATE_TIME_FORMATTER = new Intl.DateTimeFormat('fa-IR', {
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: 'Asia/Tehran',
-})
+const UPDATE_TIME_FORMATTER =
+  new Intl.DateTimeFormat('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Tehran',
+  })
 
 function readNewsCache() {
   try {
@@ -71,12 +75,17 @@ function readNewsCache() {
           article.id != null &&
           article.title &&
           article.url &&
-          (!Number.isFinite(Date.parse(article.published_at)) ||
-            Date.parse(article.published_at) <= Date.now()),
+          (!Number.isFinite(
+            Date.parse(article.published_at),
+          ) ||
+            Date.parse(article.published_at) <=
+              Date.now()),
       )
       .slice(0, NEWS_PAGE_SIZE)
 
-    const totalCount = Number.isInteger(cached.totalCount)
+    const totalCount = Number.isInteger(
+      cached.totalCount,
+    )
       ? cached.totalCount
       : cachedArticles.length
 
@@ -84,12 +93,11 @@ function readNewsCache() {
       articles: cachedArticles,
       updatedAt: cached.updatedAt || null,
       totalCount,
-      nextPage:
-        Number.isInteger(cached.nextPage)
-          ? cached.nextPage
-          : cachedArticles.length >= totalCount
-            ? null
-            : 2,
+      nextPage: Number.isInteger(cached.nextPage)
+        ? cached.nextPage
+        : cachedArticles.length >= totalCount
+          ? null
+          : 2,
     }
   } catch {
     return {
@@ -138,7 +146,9 @@ function formatUpdateTime(value) {
 function readSavedArticles() {
   try {
     const saved = JSON.parse(
-      localStorage.getItem(SAVED_ARTICLES_KEY) || '[]',
+      localStorage.getItem(
+        SAVED_ARTICLES_KEY,
+      ) || '[]',
     )
 
     return Array.isArray(saved)
@@ -157,7 +167,9 @@ function readSavedArticles() {
 
 function readTheme() {
   try {
-    return localStorage.getItem(THEME_STORAGE_KEY) === 'dark'
+    return localStorage.getItem(
+      THEME_STORAGE_KEY,
+    ) === 'dark'
       ? 'dark'
       : 'light'
   } catch {
@@ -174,26 +186,56 @@ function formatRelativeDate(value) {
 
   const differenceInSeconds =
     (date.getTime() - Date.now()) / 1000
-  const absoluteDifference = Math.abs(differenceInSeconds)
+
+  const absoluteDifference =
+    Math.abs(differenceInSeconds)
 
   if (absoluteDifference < 60) {
     return 'همین الان'
   }
 
   const units = [
-    { limit: 60 * 60, seconds: 60, unit: 'minute' },
-    { limit: 24 * 60 * 60, seconds: 60 * 60, unit: 'hour' },
-    { limit: 7 * 24 * 60 * 60, seconds: 24 * 60 * 60, unit: 'day' },
-    { limit: 30 * 24 * 60 * 60, seconds: 7 * 24 * 60 * 60, unit: 'week' },
-    { limit: 365 * 24 * 60 * 60, seconds: 30 * 24 * 60 * 60, unit: 'month' },
-    { limit: Infinity, seconds: 365 * 24 * 60 * 60, unit: 'year' },
+    {
+      limit: 60 * 60,
+      seconds: 60,
+      unit: 'minute',
+    },
+    {
+      limit: 24 * 60 * 60,
+      seconds: 60 * 60,
+      unit: 'hour',
+    },
+    {
+      limit: 7 * 24 * 60 * 60,
+      seconds: 24 * 60 * 60,
+      unit: 'day',
+    },
+    {
+      limit: 30 * 24 * 60 * 60,
+      seconds: 7 * 24 * 60 * 60,
+      unit: 'week',
+    },
+    {
+      limit: 365 * 24 * 60 * 60,
+      seconds: 30 * 24 * 60 * 60,
+      unit: 'month',
+    },
+    {
+      limit: Infinity,
+      seconds: 365 * 24 * 60 * 60,
+      unit: 'year',
+    },
   ]
+
   const { seconds, unit } = units.find(
-    (relativeUnit) => absoluteDifference < relativeUnit.limit,
+    (relativeUnit) =>
+      absoluteDifference < relativeUnit.limit,
   )
 
   return ARTICLE_RELATIVE_TIME_FORMATTER.format(
-    Math.round(differenceInSeconds / seconds),
+    Math.round(
+      differenceInSeconds / seconds,
+    ),
     unit,
   )
 }
@@ -208,33 +250,52 @@ function formatDate(value) {
   return ARTICLE_DATE_FORMATTER.format(date)
 }
 
-function ArticleImage({ article, featured = false }) {
+function ArticleImage({
+  article,
+  featured = false,
+}) {
   return (
     <div
       className={`story-image${
-        featured ? ' story-image-featured' : ''
+        featured
+          ? ' story-image-featured'
+          : ''
       }`}
     >
       {article.image ? (
         <img
           src={article.image}
-          alt=""
-          loading={featured ? 'eager' : 'lazy'}
-          decoding="async"
-          fetchPriority={featured ? 'high' : 'auto'}
-          onError={(event) =>
-            event.currentTarget.remove()
+          alt={article.title}
+          loading={
+            featured ? 'eager' : 'lazy'
           }
+          decoding="async"
+          fetchPriority={
+            featured ? 'high' : 'auto'
+          }
+          onError={(event) => {
+            event.currentTarget.style.display =
+              'none'
+          }}
         />
       ) : null}
 
-      <span className="image-caption" aria-hidden="true">
-        <Newspaper size={20} strokeWidth={1.5} />
+      <span
+        className="image-caption"
+        aria-hidden="true"
+      >
+        <Newspaper
+          size={20}
+          strokeWidth={1.5}
+        />
+
         <span>روایت روز</span>
       </span>
 
       {featured ? (
-        <span className="image-index">۰۱ / امروز</span>
+        <span className="image-index">
+          ۰۱ / امروز
+        </span>
       ) : null}
     </div>
   )
@@ -253,21 +314,32 @@ function StoryMeta({
       </span>
 
       <span className="story-time">
-        <Clock3 size={14} aria-hidden="true" />
+        <Clock3
+          size={14}
+          aria-hidden="true"
+        />
 
         <time dateTime={article.published_at}>
           {relativeTime
-            ? formatRelativeDate(article.published_at)
-            : formatDate(article.published_at)}
+            ? formatRelativeDate(
+                article.published_at,
+              )
+            : formatDate(
+                article.published_at,
+              )}
         </time>
       </span>
 
       <button
         className={`save-story${
-          isSaved ? ' save-story-active' : ''
+          isSaved
+            ? ' save-story-active'
+            : ''
         }`}
         type="button"
-        onClick={() => onToggleSaved(article)}
+        onClick={() =>
+          onToggleSaved(article)
+        }
         aria-label={
           isSaved
             ? `حذف از نشان‌شده‌ها: ${article.title}`
@@ -300,7 +372,9 @@ function StoryCard({
   return (
     <article
       className={
-        featured ? 'lead-story' : 'story-card'
+        featured
+          ? 'lead-story'
+          : 'story-card'
       }
     >
       <a
@@ -328,7 +402,9 @@ function StoryCard({
           <button
             className="story-title"
             type="button"
-            onClick={() => onOpen(article)}
+            onClick={() =>
+              onOpen(article)
+            }
           >
             {article.title}
           </button>
@@ -347,6 +423,7 @@ function StoryCard({
           rel="noreferrer"
         >
           متن کامل در منبع خبر
+
           <ArrowUpLeft
             size={17}
             aria-hidden="true"
@@ -358,28 +435,27 @@ function StoryCard({
 }
 
 function App() {
-  const [initialNews] = useState(readNewsCache)
+  const [initialNews] =
+    useState(readNewsCache)
 
-  const [articles, setArticles] = useState(
-    initialNews.articles,
-  )
+  const [articles, setArticles] =
+    useState(initialNews.articles)
 
-  const [totalCount, setTotalCount] = useState(
-    initialNews.totalCount,
-  )
+  const [totalCount, setTotalCount] =
+    useState(initialNews.totalCount)
 
-  const [nextPage, setNextPage] = useState(
-    initialNews.nextPage,
-  )
+  const [nextPage, setNextPage] =
+    useState(initialNews.nextPage)
 
   const [savedArticles, setSavedArticles] =
     useState(readSavedArticles)
 
-  const [lastUpdated, setLastUpdated] = useState(
-    initialNews.updatedAt,
-  )
+  const [lastUpdated, setLastUpdated] =
+    useState(initialNews.updatedAt)
 
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] =
+    useState(true)
+
   const [isLoadingMore, setIsLoadingMore] =
     useState(false)
 
@@ -388,33 +464,50 @@ function App() {
     useState('')
 
   const [query, setQuery] = useState('')
-  const [loadedQuery, setLoadedQuery] = useState('')
-  const [selectedSource, setSelectedSource] =
-    useState('همه')
+  const [loadedQuery, setLoadedQuery] =
+    useState('')
+
+  const [
+    selectedSource,
+    setSelectedSource,
+  ] = useState('همه')
 
   const [activeView, setActiveView] =
     useState('latest')
 
-  const [selectedArticle, setSelectedArticle] =
-    useState(null)
+  const [
+    selectedArticle,
+    setSelectedArticle,
+  ] = useState(null)
 
-  const [isLoadingDetails, setIsLoadingDetails] =
-    useState(false)
+  const [
+    isLoadingDetails,
+    setIsLoadingDetails,
+  ] = useState(false)
 
   const [detailError, setDetailError] =
     useState('')
 
-  const [shareStatus, setShareStatus] = useState('')
-  const [theme, setTheme] = useState(readTheme)
+  const [shareStatus, setShareStatus] =
+    useState('')
 
-  const previousFocusRef = useRef(null)
-  const detailRequestRef = useRef(null)
+  const [theme, setTheme] =
+    useState(readTheme)
+
+  const previousFocusRef =
+    useRef(null)
+
+  const detailRequestRef =
+    useRef(null)
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
+    document.documentElement.dataset.theme =
+      theme
 
     document
-      .querySelector('meta[name="theme-color"]')
+      .querySelector(
+        'meta[name="theme-color"]',
+      )
       ?.setAttribute(
         'content',
         theme === 'dark'
@@ -444,76 +537,120 @@ function App() {
   }, [savedArticles])
 
   useEffect(() => {
-    if (activeView !== 'latest') return undefined
+    if (activeView !== 'latest') {
+      return undefined
+    }
 
-    const controller = new AbortController()
+    const controller =
+      new AbortController()
+
     const searchQuery = query.trim()
+    const sourceFilter =
+      selectedSource === 'همه'
+        ? ''
+        : selectedSource
 
-    const timeout = window.setTimeout(() => {
-      requestNews({
-        page: 1,
-        pageSize: NEWS_PAGE_SIZE,
-        query: searchQuery,
-        signal: controller.signal,
-      })
-        .then((data) => {
-          const firstPageArticles =
-            data.articles.slice(0, NEWS_PAGE_SIZE)
+    const timeout = window.setTimeout(
+      () => {
+        requestNews({
+          page: 1,
+          pageSize: NEWS_PAGE_SIZE,
+          query: searchQuery,
+          source: sourceFilter,
+          signal: controller.signal,
+        })
+          .then((data) => {
+            const firstPageArticles =
+              data.articles.slice(
+                0,
+                NEWS_PAGE_SIZE,
+              )
 
-          const resolvedNextPage =
-            Number.isInteger(data.nextPage)
-              ? data.nextPage
-              : firstPageArticles.length <
-                  data.totalCount
-                ? 2
-                : null
+            const resolvedNextPage =
+              Number.isInteger(
+                data.nextPage,
+              )
+                ? data.nextPage
+                : firstPageArticles.length <
+                    data.totalCount
+                  ? 2
+                  : null
 
-          setArticles(firstPageArticles)
-          setTotalCount(data.totalCount)
-          setNextPage(resolvedNextPage)
-          setLoadedQuery(searchQuery)
-
-          if (!searchQuery) {
-            setLastUpdated(
-              storeNewsCache(
-                firstPageArticles,
-                data.totalCount,
-                resolvedNextPage,
-              ),
+            setArticles(
+              firstPageArticles,
             )
-          }
 
-          setError('')
-        })
-        .catch((requestError) => {
-          if (
-            requestError.name !== 'AbortError'
-          ) {
-            setError(
-              'دریافت خبرها انجام نشد. اتصال به سرور خبر را بررسی کنید.',
+            setTotalCount(
+              data.totalCount,
             )
-          }
-        })
-        .finally(() => {
-          if (!controller.signal.aborted) {
-            setIsLoading(false)
-          }
-        })
-    }, searchQuery ? 300 : 0)
+
+            setNextPage(
+              resolvedNextPage,
+            )
+
+            setLoadedQuery(
+              searchQuery,
+            )
+
+            if (
+              !searchQuery &&
+              !sourceFilter
+            ) {
+              setLastUpdated(
+                storeNewsCache(
+                  firstPageArticles,
+                  data.totalCount,
+                  resolvedNextPage,
+                ),
+              )
+            }
+
+            setError('')
+          })
+          .catch((requestError) => {
+            if (
+              requestError.name !==
+              'AbortError'
+            ) {
+              setError(
+                'دریافت خبرها انجام نشد. اتصال به سرور خبر را بررسی کنید.',
+              )
+            }
+          })
+          .finally(() => {
+            if (
+              !controller.signal.aborted
+            ) {
+              setIsLoading(false)
+            }
+          })
+      },
+      searchQuery ||
+        sourceFilter
+        ? 300
+        : 0,
+    )
 
     return () => {
       window.clearTimeout(timeout)
       controller.abort()
     }
-  }, [activeView, query])
+  }, [
+    activeView,
+    query,
+    selectedSource,
+  ])
 
   useEffect(() => {
-    if (!selectedArticle) return undefined
+    if (!selectedArticle) {
+      return undefined
+    }
 
     const previousOverflow =
       document.body.style.overflow
 
-    document.body.style.overflow = 'hidden'
+    document.body.style.overflow =
+      'hidden'
 
     function handleReaderKeys(event) {
       if (event.key === 'Escape') {
@@ -521,7 +658,9 @@ function App() {
         return
       }
 
-      if (event.key !== 'Tab') return
+      if (event.key !== 'Tab') {
+        return
+      }
 
       const focusable = [
         ...document.querySelectorAll(
@@ -530,9 +669,12 @@ function App() {
       ]
 
       const first = focusable[0]
-      const last = focusable.at(-1)
+      const last =
+        focusable.at(-1)
 
-      if (!first || !last) return
+      if (!first || !last) {
+        return
+      }
 
       if (
         event.shiftKey &&
@@ -573,17 +715,34 @@ function App() {
     setLoadMoreError('')
 
     try {
+      const sourceFilter =
+        selectedSource === 'همه'
+          ? ''
+          : selectedSource
+
       const data = await requestNews({
         page: 1,
         pageSize: NEWS_PAGE_SIZE,
-        query: activeView === 'latest' ? query : '',
+        query:
+          activeView === 'latest'
+            ? query
+            : '',
+        source:
+          activeView === 'latest'
+            ? sourceFilter
+            : '',
       })
 
       const firstPageArticles =
-        data.articles.slice(0, NEWS_PAGE_SIZE)
+        data.articles.slice(
+          0,
+          NEWS_PAGE_SIZE,
+        )
 
       const resolvedNextPage =
-        Number.isInteger(data.nextPage)
+        Number.isInteger(
+          data.nextPage,
+        )
           ? data.nextPage
           : firstPageArticles.length <
               data.totalCount
@@ -591,13 +750,24 @@ function App() {
             : null
 
       setArticles(firstPageArticles)
-      setTotalCount(data.totalCount)
-      setNextPage(resolvedNextPage)
-      setLoadedQuery(
-        activeView === 'latest' ? query.trim() : '',
+      setTotalCount(
+        data.totalCount,
+      )
+      setNextPage(
+        resolvedNextPage,
       )
 
-      if (activeView !== 'latest' || !query.trim()) {
+      setLoadedQuery(
+        activeView === 'latest'
+          ? query.trim()
+          : '',
+      )
+
+      if (
+        activeView !== 'latest' ||
+        (!query.trim() &&
+          !sourceFilter)
+      ) {
         setLastUpdated(
           storeNewsCache(
             firstPageArticles,
@@ -629,11 +799,18 @@ function App() {
     setLoadMoreError('')
 
     try {
-      const data = await requestNews({
-        page: nextPage,
-        pageSize: NEWS_PAGE_SIZE,
-        query: query.trim(),
-      })
+      const sourceFilter =
+        selectedSource === 'همه'
+          ? ''
+          : selectedSource
+
+      const data =
+        await requestNews({
+          page: nextPage,
+          pageSize: NEWS_PAGE_SIZE,
+          query: query.trim(),
+          source: sourceFilter,
+        })
 
       const knownIds = new Set(
         articles.map((article) =>
@@ -644,7 +821,9 @@ function App() {
       const additionalArticles =
         data.articles.filter(
           (article) =>
-            !knownIds.has(String(article.id)),
+            !knownIds.has(
+              String(article.id),
+            ),
         )
 
       const mergedArticles = [
@@ -653,24 +832,39 @@ function App() {
       ]
 
       const resolvedNextPage =
-        Number.isInteger(data.nextPage)
+        Number.isInteger(
+          data.nextPage,
+        )
           ? data.nextPage
           : mergedArticles.length <
               data.totalCount
             ? nextPage + 1
             : null
 
-      setArticles(mergedArticles)
-      setTotalCount(data.totalCount)
-      setNextPage(resolvedNextPage)
-
-      setLastUpdated(
-        storeNewsCache(
-          mergedArticles,
-          data.totalCount,
-          resolvedNextPage,
-        ),
+      setArticles(
+        mergedArticles,
       )
+
+      setTotalCount(
+        data.totalCount,
+      )
+
+      setNextPage(
+        resolvedNextPage,
+      )
+
+      if (
+        !query.trim() &&
+        !sourceFilter
+      ) {
+        setLastUpdated(
+          storeNewsCache(
+            mergedArticles,
+            data.totalCount,
+            resolvedNextPage,
+          ),
+        )
+      }
     } catch {
       setLoadMoreError(
         'دریافت خبرهای بیشتر ناموفق بود.',
@@ -680,13 +874,16 @@ function App() {
     }
   }
 
-  function toggleSavedArticle(article) {
+  function toggleSavedArticle(
+    article,
+  ) {
     setSavedArticles((current) => {
-      const isSaved = current.some(
-        (saved) =>
-          String(saved.id) ===
-          String(article.id),
-      )
+      const isSaved =
+        current.some(
+          (saved) =>
+            String(saved.id) ===
+            String(article.id),
+        )
 
       return isSaved
         ? current.filter(
@@ -694,13 +891,18 @@ function App() {
               String(saved.id) !==
               String(article.id),
           )
-        : [article, ...current]
+        : [
+            article,
+            ...current,
+          ]
     })
   }
 
   function changeView(view) {
     setActiveView(view)
-    setIsLoading(view === 'latest')
+    setIsLoading(
+      view === 'latest',
+    )
     setSelectedSource('همه')
     setQuery('')
   }
@@ -708,8 +910,11 @@ function App() {
   function openReader(article) {
     detailRequestRef.current?.abort()
 
-    const controller = new AbortController()
-    detailRequestRef.current = controller
+    const controller =
+      new AbortController()
+
+    detailRequestRef.current =
+      controller
 
     previousFocusRef.current =
       document.activeElement
@@ -719,26 +924,41 @@ function App() {
     setDetailError('')
     setIsLoadingDetails(true)
 
-    requestNewsDetails(article.id, {
-      signal: controller.signal,
-    })
+    requestNewsDetails(
+      article.id,
+      {
+        signal:
+          controller.signal,
+      },
+    )
       .then((details) => {
-        setSelectedArticle((current) =>
-          String(current?.id) === String(article.id)
-            ? details
-            : current,
+        setSelectedArticle(
+          (current) =>
+            String(
+              current?.id,
+            ) ===
+            String(article.id)
+              ? details
+              : current,
         )
       })
       .catch((requestError) => {
-        if (requestError.name !== 'AbortError') {
+        if (
+          requestError.name !==
+          'AbortError'
+        ) {
           setDetailError(
-            'جزئیات خبر دریافت نشد. می‌توانید متن کامل را در منبع اصلی بخوانید.',
+            'جزئیات خبر دریافت نشد. می‌توانید متن کامل خبر را در منبع اصلی بخوانید.',
           )
         }
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
-          setIsLoadingDetails(false)
+        if (
+          !controller.signal.aborted
+        ) {
+          setIsLoadingDetails(
+            false,
+          )
         }
       })
   }
@@ -750,13 +970,17 @@ function App() {
   }
 
   async function shareArticle() {
-    if (!selectedArticle) return
+    if (!selectedArticle) {
+      return
+    }
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: selectedArticle.title,
-          url: selectedArticle.url,
+          title:
+            selectedArticle.title,
+          url:
+            selectedArticle.url,
         })
 
         setShareStatus(
@@ -773,7 +997,8 @@ function App() {
       }
     } catch (shareError) {
       if (
-        shareError.name !== 'AbortError'
+        shareError.name !==
+        'AbortError'
       ) {
         setShareStatus(
           'اشتراک‌گذاری در دسترس نیست.',
@@ -790,34 +1015,55 @@ function App() {
   const sources = [
     ...new Set(
       viewArticles
-        .map((article) => article.source)
+        .map(
+          (article) =>
+            article.source,
+        )
         .filter(Boolean),
     ),
   ]
 
   const filteredArticles =
-    viewArticles.filter((article) => {
-      const matchesSource =
-        selectedSource === 'همه' ||
-        article.source === selectedSource
+    viewArticles.filter(
+      (article) => {
+        const matchesSource =
+          selectedSource ===
+            'همه' ||
+          article.source ===
+            selectedSource
 
-      return (
-        matchesSource &&
-        (activeView === 'latest' ||
-          `${article.title} ${
-            article.description || ''
-          } ${article.source || ''}`
-            .toLocaleLowerCase('fa')
-            .includes(query.trim().toLocaleLowerCase('fa')))
-      )
-    })
+        return (
+          matchesSource &&
+          (activeView ===
+            'latest' ||
+            `${article.title} ${
+              article.description ||
+              ''
+            } ${
+              article.source ||
+              ''
+            }`
+              .toLocaleLowerCase(
+                'fa',
+              )
+              .includes(
+                query
+                  .trim()
+                  .toLocaleLowerCase(
+                    'fa',
+                  ),
+              ))
+        )
+      },
+    )
 
   const featuredArticle =
     filteredArticles[0]
 
   const isSearchPending =
     activeView === 'latest' &&
-    query.trim() !== loadedQuery
+    query.trim() !==
+      loadedQuery
 
   const remainingArticles =
     filteredArticles.slice(1)
@@ -825,33 +1071,39 @@ function App() {
   const hasMoreArticles =
     activeView === 'latest' &&
     nextPage !== null &&
-    articles.length < totalCount
+    articles.length <
+      totalCount
 
-  const remainingCount = Math.max(
-    0,
-    totalCount - articles.length,
-  )
+  const remainingCount =
+    Math.max(
+      0,
+      totalCount -
+        articles.length,
+    )
 
-  const issueDay = new Intl.DateTimeFormat(
-    'fa-IR',
-    {
-      day: '2-digit',
-    },
-  ).format(ISSUE_DATE)
+  const issueDay =
+    new Intl.DateTimeFormat(
+      'fa-IR',
+      {
+        day: '2-digit',
+      },
+    ).format(ISSUE_DATE)
 
-  const issueYear = new Intl.DateTimeFormat(
-    'fa-IR',
-    {
-      year: 'numeric',
-    },
-  ).format(ISSUE_DATE)
+  const issueYear =
+    new Intl.DateTimeFormat(
+      'fa-IR',
+      {
+        year: 'numeric',
+      },
+    ).format(ISSUE_DATE)
 
-  const fullDate = new Intl.DateTimeFormat(
-    'fa-IR',
-    {
-      dateStyle: 'long',
-    },
-  ).format(ISSUE_DATE)
+  const fullDate =
+    new Intl.DateTimeFormat(
+      'fa-IR',
+      {
+        dateStyle: 'long',
+      },
+    ).format(ISSUE_DATE)
 
   return (
     <div className="app-shell">
@@ -877,16 +1129,20 @@ function App() {
         >
           <button
             className={
-              activeView === 'latest'
+              activeView ===
+              'latest'
                 ? 'nav-active'
                 : ''
             }
             type="button"
             onClick={() =>
-              changeView('latest')
+              changeView(
+                'latest',
+              )
             }
             aria-pressed={
-              activeView === 'latest'
+              activeView ===
+              'latest'
             }
           >
             تازه‌ها
@@ -898,16 +1154,20 @@ function App() {
 
           <button
             className={
-              activeView === 'saved'
+              activeView ===
+              'saved'
                 ? 'nav-active'
                 : ''
             }
             type="button"
             onClick={() =>
-              changeView('saved')
+              changeView(
+                'saved',
+              )
             }
             aria-pressed={
-              activeView === 'saved'
+              activeView ===
+              'saved'
             }
           >
             نشان‌شده‌ها{' '}
@@ -924,10 +1184,12 @@ function App() {
             className="theme-toggle"
             type="button"
             onClick={() =>
-              setTheme((current) =>
-                current === 'light'
-                  ? 'dark'
-                  : 'light',
+              setTheme(
+                (current) =>
+                  current ===
+                  'light'
+                    ? 'dark'
+                    : 'light',
               )
             }
             aria-label={
@@ -941,7 +1203,8 @@ function App() {
                 : 'حالت روشن'
             }
           >
-            {theme === 'light' ? (
+            {theme ===
+            'light' ? (
               <Moon
                 size={17}
                 aria-hidden="true"
@@ -979,36 +1242,53 @@ function App() {
               aria-hidden="true"
             />
 
-            <span>روی خط خبر</span>
+            <span>
+              روی خط خبر
+            </span>
           </div>
 
-          {articles.length > 0 ? (
+          {articles.length >
+          0 ? (
             articles
               .slice(0, 3)
-              .map((article, index) => (
-                <a
-                  className="rail-story"
-                  href={article.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  key={article.id}
-                >
-                  <span className="rail-index">
-                    {ARTICLE_INDEX_FORMATTER.format(
-                      index + 1,
-                    )}
-                  </span>
+              .map(
+                (
+                  article,
+                  index,
+                ) => (
+                  <a
+                    className="rail-story"
+                    href={
+                      article.url
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    key={
+                      article.id
+                    }
+                  >
+                    <span className="rail-index">
+                      {ARTICLE_INDEX_FORMATTER.format(
+                        index +
+                          1,
+                      )}
+                    </span>
 
-                  <span className="rail-title">
-                    {article.title}
-                  </span>
+                    <span className="rail-title">
+                      {
+                        article.title
+                      }
+                    </span>
 
-                  <ArrowUpLeft
-                    size={15}
-                    aria-hidden="true"
-                  />
-                </a>
-              ))
+                    <ArrowUpLeft
+                      size={
+                        15
+                      }
+                      aria-hidden="true"
+                    />
+                  </a>
+                ),
+              )
           ) : (
             <span className="rail-placeholder">
               {isLoading
@@ -1031,19 +1311,32 @@ function App() {
             <h1 id="page-title">
               خبر را
               <br />
-              <em>از نو ببین.</em>
+              <em>
+                از نو ببین.
+              </em>
             </h1>
 
             <p>
-              گزیده‌ای از تازه‌ترین روایت‌ها، از منابع گوناگون.
+              گزیده‌ای از
+              تازه‌ترین
+              روایت‌ها، از
+              منابع گوناگون.
             </p>
           </div>
 
           <div className="masthead-side">
             <div className="today-stamp">
-              <span>شماره امروز</span>
-              <strong>{issueDay}</strong>
-              <i>{issueYear}</i>
+              <span>
+                شماره امروز
+              </span>
+
+              <strong>
+                {issueDay}
+              </strong>
+
+              <i>
+                {issueYear}
+              </i>
             </div>
 
             <div className="live-note">
@@ -1052,7 +1345,9 @@ function App() {
                 aria-hidden="true"
               />
 
-              <span>گردآوری روزانه</span>
+              <span>
+                گردآوری روزانه
+              </span>
             </div>
           </div>
         </section>
@@ -1069,11 +1364,13 @@ function App() {
               </p>
 
               <h2 id="latest-heading">
-                {activeView === 'saved'
+                {activeView ===
+                'saved'
                   ? 'خبرهای نشان‌شده'
                   : 'تازه‌ترین خبرها'}{' '}
                 <span>
-                  {activeView === 'latest'
+                  {activeView ===
+                  'latest'
                     ? totalCount.toLocaleString(
                         'fa-IR',
                       )
@@ -1100,8 +1397,12 @@ function App() {
               <button
                 className="refresh-button"
                 type="button"
-                onClick={refreshNews}
-                disabled={isLoading}
+                onClick={
+                  refreshNews
+                }
+                disabled={
+                  isLoading
+                }
                 aria-label="به‌روزرسانی خبرها"
                 title="به‌روزرسانی خبرها"
               >
@@ -1135,18 +1436,29 @@ function App() {
               <input
                 type="search"
                 value={query}
-                onChange={(event) => {
-                  if (activeView === 'latest') {
-                    setIsLoading(true)
+                onChange={(
+                  event,
+                ) => {
+                  if (
+                    activeView ===
+                    'latest'
+                  ) {
+                    setIsLoading(
+                      true,
+                    )
                   }
 
                   setQuery(
-                    event.target.value,
+                    event.target
+                      .value,
                   )
                 }}
-                placeholder={activeView === 'latest'
-                  ? 'جست‌وجو در خبرها'
-                  : 'جست‌وجو در نشان‌شده‌ها'}
+                placeholder={
+                  activeView ===
+                  'latest'
+                    ? 'جست‌وجو در خبرها'
+                    : 'جست‌وجو در نشان‌شده‌ها'
+                }
                 aria-label="جست‌وجو در خبرها"
               />
 
@@ -1158,15 +1470,21 @@ function App() {
               role="group"
               aria-label="فیلتر منابع خبری"
             >
-              {['همه', ...sources].map(
+              {[
+                'همه',
+                ...sources,
+              ].map(
                 (source) => (
                   <button
                     className={
-                      selectedSource === source
+                      selectedSource ===
+                      source
                         ? 'source-tab source-tab-active'
                         : 'source-tab'
                     }
-                    key={source}
+                    key={
+                      source
+                    }
                     type="button"
                     onClick={() =>
                       setSelectedSource(
@@ -1174,7 +1492,8 @@ function App() {
                       )
                     }
                     aria-pressed={
-                      selectedSource === source
+                      selectedSource ===
+                      source
                     }
                   >
                     {source}
@@ -1189,13 +1508,18 @@ function App() {
               className="notice notice-error"
               role="alert"
             >
-              <p>{error}</p>
+              <p>
+                {error}
+              </p>
 
               <button
                 type="button"
-                onClick={refreshNews}
+                onClick={
+                  refreshNews
+                }
               >
                 تلاش دوباره
+
                 <ArrowLeft
                   size={15}
                 />
@@ -1203,9 +1527,12 @@ function App() {
             </div>
           ) : null}
 
-          {activeView === 'latest' &&
+          {activeView ===
+            'latest' &&
           isLoading &&
-          (articles.length === 0 || isSearchPending) ? (
+          (articles.length ===
+            0 ||
+            isSearchPending) ? (
             <div
               className="loading-state"
               aria-live="polite"
@@ -1224,13 +1551,17 @@ function App() {
 
           {!isLoading &&
           !error &&
-          activeView === 'latest' &&
-          articles.length === 0 &&
+          activeView ===
+            'latest' &&
+          articles.length ===
+            0 &&
           !query.trim() ? (
             <div className="empty-state">
               <Newspaper
                 size={30}
-                strokeWidth={1.4}
+                strokeWidth={
+                  1.4
+                }
                 aria-hidden="true"
               />
 
@@ -1239,34 +1570,48 @@ function App() {
               </h3>
 
               <p>
-                برای بررسی دوباره، فهرست خبرها را به‌روزرسانی کنید.
+                برای بررسی
+                دوباره، فهرست
+                خبرها را
+                به‌روزرسانی
+                کنید.
               </p>
             </div>
           ) : null}
 
           {!isLoading &&
-          activeView === 'saved' &&
-          savedArticles.length === 0 ? (
+          activeView ===
+            'saved' &&
+          savedArticles.length ===
+            0 ? (
             <div className="empty-state">
               <Bookmark
                 size={30}
-                strokeWidth={1.4}
+                strokeWidth={
+                  1.4
+                }
                 aria-hidden="true"
               />
 
               <h3>
-                فهرست نشان‌شده‌ها خالی است
+                فهرست نشان‌شده‌ها
+                خالی است
               </h3>
 
               <p>
-                خبرهایی را که می‌خواهید بعداً بخوانید، ذخیره کنید.
+                خبرهایی را که
+                می‌خواهید بعداً
+                بخوانید، ذخیره
+                کنید.
               </p>
 
               <button
                 className="empty-action"
                 type="button"
                 onClick={() =>
-                  changeView('latest')
+                  changeView(
+                    'latest',
+                  )
                 }
               >
                 دیدن تازه‌ترین خبرها
@@ -1275,38 +1620,54 @@ function App() {
           ) : null}
 
           {!isLoading &&
-          ((activeView === 'latest' &&
+          ((activeView ===
+            'latest' &&
             query.trim() &&
-            articles.length === 0) ||
-            (activeView === 'saved' &&
-              viewArticles.length > 0 &&
-              filteredArticles.length === 0)) ? (
+            articles.length ===
+              0) ||
+            (activeView ===
+              'saved' &&
+              viewArticles.length >
+                0 &&
+              filteredArticles.length ===
+                0)) ? (
             <div className="empty-state">
               <Search
                 size={28}
-                strokeWidth={1.5}
+                strokeWidth={
+                  1.5
+                }
                 aria-hidden="true"
               />
 
-              <h3>خبری پیدا نشد</h3>
+              <h3>
+                خبری پیدا نشد
+              </h3>
 
               <p>
-                عبارت جست‌وجو یا منبع دیگری را انتخاب کنید.
+                عبارت جست‌وجو
+                یا منبع دیگری
+                را انتخاب کنید.
               </p>
             </div>
           ) : null}
 
-          {featuredArticle && !isSearchPending ? (
+          {featuredArticle &&
+          !isSearchPending ? (
             <div
               className="stories"
               aria-live="polite"
             >
               <StoryCard
-                article={featuredArticle}
+                article={
+                  featuredArticle
+                }
                 featured
                 isSaved={savedArticles.some(
                   (article) =>
-                    String(article.id) ===
+                    String(
+                      article.id,
+                    ) ===
                     String(
                       featuredArticle.id,
                     ),
@@ -1314,19 +1675,29 @@ function App() {
                 onToggleSaved={
                   toggleSavedArticle
                 }
-                onOpen={openReader}
+                onOpen={
+                  openReader
+                }
               />
 
               {remainingArticles.length >
               0 ? (
                 <div className="story-grid">
                   {remainingArticles.map(
-                    (article) => (
+                    (
+                      article,
+                    ) => (
                       <StoryCard
-                        article={article}
-                        key={article.id}
+                        article={
+                          article
+                        }
+                        key={
+                          article.id
+                        }
                         isSaved={savedArticles.some(
-                          (saved) =>
+                          (
+                            saved,
+                          ) =>
                             String(
                               saved.id,
                             ) ===
@@ -1337,7 +1708,9 @@ function App() {
                         onToggleSaved={
                           toggleSavedArticle
                         }
-                        onOpen={openReader}
+                        onOpen={
+                          openReader
+                        }
                       />
                     ),
                   )}
@@ -1351,7 +1724,9 @@ function App() {
                   onClick={
                     loadMoreArticles
                   }
-                  disabled={isLoadingMore}
+                  disabled={
+                    isLoadingMore
+                  }
                 >
                   {isLoadingMore
                     ? 'در حال دریافت…'
@@ -1386,7 +1761,9 @@ function App() {
                   className="load-more-error"
                   role="alert"
                 >
-                  {loadMoreError}{' '}
+                  {
+                    loadMoreError
+                  }{' '}
 
                   <button
                     type="button"
@@ -1412,7 +1789,8 @@ function App() {
         </a>
 
         <span>
-          روایت روشن از آنچه می‌گذرد
+          روایت روشن از آنچه
+          می‌گذرد
         </span>
 
         <time
@@ -1426,7 +1804,9 @@ function App() {
       {selectedArticle ? (
         <div
           className="reader-backdrop"
-          onMouseDown={(event) => {
+          onMouseDown={(
+            event,
+          ) => {
             if (
               event.target ===
               event.currentTarget
@@ -1447,6 +1827,7 @@ function App() {
                   size={17}
                   aria-hidden="true"
                 />
+
                 خوانش سریع
               </span>
 
@@ -1454,7 +1835,9 @@ function App() {
                 className="reader-close"
                 type="button"
                 autoFocus
-                onClick={closeReader}
+                onClick={
+                  closeReader
+                }
                 aria-label="بستن پنجره"
               >
                 <X
@@ -1470,7 +1853,9 @@ function App() {
                   src={
                     selectedArticle.image
                   }
-                  alt=""
+                  alt={
+                    selectedArticle.title
+                  }
                   decoding="async"
                 />
               </div>
@@ -1478,20 +1863,32 @@ function App() {
 
             <div className="reader-body">
               {isLoadingDetails ? (
-                <p role="status">در حال دریافت جزئیات خبر…</p>
+                <p role="status">
+                  در حال دریافت
+                  جزئیات خبر…
+                </p>
               ) : null}
 
               {detailError ? (
-                <p className="share-status" role="status">
-                  {detailError}
+                <p
+                  className="share-status"
+                  role="status"
+                >
+                  {
+                    detailError
+                  }
                 </p>
               ) : null}
 
               <StoryMeta
-                article={selectedArticle}
+                article={
+                  selectedArticle
+                }
                 isSaved={savedArticles.some(
                   (article) =>
-                    String(article.id) ===
+                    String(
+                      article.id,
+                    ) ===
                     String(
                       selectedArticle.id,
                     ),
@@ -1502,7 +1899,9 @@ function App() {
               />
 
               <h2 id="reader-title">
-                {selectedArticle.title}
+                {
+                  selectedArticle.title
+                }
               </h2>
 
               <p className="reader-description">
@@ -1548,7 +1947,9 @@ function App() {
                   className="share-status"
                   role="status"
                 >
-                  {shareStatus}
+                  {
+                    shareStatus
+                  }
                 </p>
               ) : null}
             </div>
