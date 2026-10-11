@@ -44,11 +44,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "rest_framework",
     "corsheaders",
     "django_crontab",
     "news",
+    "customuser",
 ]
+
+AUTH_USER_MODEL = "customuser.CustomUser"
+
 
 
 # -----------------------------------------------------------------------------
@@ -219,3 +224,4 @@ REST_FRAMEWORK = {
         "anon": "120/min",
     },
 }
+
