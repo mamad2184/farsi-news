@@ -2551,3 +2551,278 @@ body {
   .date-filter-controls { grid-template-columns: 1fr; }
   .date-filter-heading, .date-format-note, .clear-date-button { grid-column: 1; }
 }
+
+/* Compact, expandable date-range filter */
+.date-filter {
+  position: relative;
+  min-width: 0;
+}
+
+.date-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  min-height: 42px;
+  max-width: 100%;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.date-filter-toggle > svg:first-child {
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.date-filter-toggle:hover,
+.date-filter-toggle-open {
+  border-color: var(--line-strong);
+  color: var(--text);
+  background: var(--surface);
+}
+
+.date-filter-active {
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date-filter-chevron {
+  flex: 0 0 auto;
+  margin-inline-start: 2px;
+  transition: transform 160ms ease;
+}
+
+.date-filter-toggle-open .date-filter-chevron {
+  transform: rotate(180deg);
+}
+
+.date-filter-controls {
+  grid-template-columns: minmax(170px, 1fr) repeat(2, minmax(140px, .75fr)) auto;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  background: var(--surface);
+  animation: fadeUp 180ms ease both;
+}
+
+.date-filter-controls .date-filter-heading {
+  grid-column: auto;
+}
+
+.date-filter-controls .date-filter-heading strong {
+  font-size: 12px;
+}
+
+.date-filter-controls .date-filter-heading p {
+  max-width: 240px;
+  font-size: 10px;
+}
+
+.date-filter-controls .date-field input {
+  height: 40px;
+}
+
+.date-filter-controls .date-format-note {
+  grid-column: 1 / -2;
+  justify-self: start;
+}
+
+.date-filter-controls .clear-date-button {
+  min-height: 38px;
+}
+
+@media (max-width: 1100px) {
+  .date-filter-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .date-filter-controls .date-filter-heading {
+    grid-column: 1 / -1;
+  }
+
+  .date-filter-controls .date-format-note,
+  .date-filter-controls .clear-date-button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .date-filter {
+    width: 100%;
+  }
+
+  .date-filter-toggle {
+    min-height: 40px;
+    padding-inline: 12px;
+    border-radius: 12px;
+  }
+
+  .date-filter-active {
+    max-width: min(42vw, 190px);
+  }
+
+  .date-filter-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    padding: 13px;
+    border-radius: 15px;
+  }
+
+  .date-filter-controls .date-filter-heading,
+  .date-filter-controls .date-format-note,
+  .date-filter-controls .clear-date-button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 380px) {
+  .date-filter-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Persian (Solar Hijri) date picker */
+.date-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.persian-date-trigger {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+.persian-date-trigger:hover,
+.persian-date-trigger:focus-visible {
+  border-color: var(--text-muted);
+  outline: none;
+}
+.persian-calendar {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 7px);
+  right: 0;
+  width: min(300px, calc(100vw - 40px));
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 14%);
+}
+.persian-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.persian-calendar-header strong {
+  font-size: 0.95rem;
+}
+.persian-calendar-header button,
+.persian-calendar-day,
+.persian-calendar-today {
+  font: inherit;
+  cursor: pointer;
+}
+.persian-calendar-header button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font-size: 1.25rem;
+}
+.persian-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+.persian-calendar-weekday {
+  padding: 5px 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-align: center;
+}
+.persian-calendar-day {
+  min-width: 0;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.82rem;
+}
+.persian-calendar-day:hover:not(:disabled) {
+  background: var(--surface-soft);
+}
+.persian-calendar-day.outside-month {
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+.persian-calendar-day.selected {
+  background: var(--text);
+  color: var(--surface);
+}
+.persian-calendar-day:disabled {
+  cursor: not-allowed;
+  opacity: 0.25;
+}
+.persian-calendar-today {
+  margin-top: 9px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+
+/* Keep the expanded date filter and its calendar above the news cards. */
+.date-filter {
+  z-index: 40;
+}
+
+.date-filter-controls {
+  position: relative;
+  z-index: 40;
+  overflow: visible;
+}
+
+.date-field:focus-within {
+  z-index: 50;
+}
+
+.persian-calendar {
+  z-index: 1000;
+}
