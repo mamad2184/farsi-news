@@ -466,6 +466,8 @@ function App() {
   const [query, setQuery] = useState('')
   const [loadedQuery, setLoadedQuery] =
     useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   const [
     selectedSource,
@@ -557,6 +559,8 @@ function App() {
           pageSize: NEWS_PAGE_SIZE,
           query: searchQuery,
           source: sourceFilter,
+          from: dateFrom,
+          to: dateTo,
           signal: controller.signal,
         })
           .then((data) => {
@@ -594,7 +598,9 @@ function App() {
 
             if (
               !searchQuery &&
-              !sourceFilter
+              !sourceFilter &&
+              !dateFrom &&
+              !dateTo
             ) {
               setLastUpdated(
                 storeNewsCache(
@@ -639,6 +645,8 @@ function App() {
     activeView,
     query,
     selectedSource,
+    dateFrom,
+    dateTo,
   ])
 
   useEffect(() => {
@@ -731,6 +739,14 @@ function App() {
           activeView === 'latest'
             ? sourceFilter
             : '',
+        from:
+          activeView === 'latest'
+            ? dateFrom
+            : '',
+        to:
+          activeView === 'latest'
+            ? dateTo
+            : '',
       })
 
       const firstPageArticles =
@@ -766,7 +782,9 @@ function App() {
       if (
         activeView !== 'latest' ||
         (!query.trim() &&
-          !sourceFilter)
+          !sourceFilter &&
+          !dateFrom &&
+          !dateTo)
       ) {
         setLastUpdated(
           storeNewsCache(
@@ -810,6 +828,8 @@ function App() {
           pageSize: NEWS_PAGE_SIZE,
           query: query.trim(),
           source: sourceFilter,
+          from: dateFrom,
+          to: dateTo,
         })
 
       const knownIds = new Set(
@@ -855,7 +875,9 @@ function App() {
 
       if (
         !query.trim() &&
-        !sourceFilter
+        !sourceFilter &&
+        !dateFrom &&
+        !dateTo
       ) {
         setLastUpdated(
           storeNewsCache(
@@ -905,6 +927,8 @@ function App() {
     )
     setSelectedSource('همه')
     setQuery('')
+    setDateFrom('')
+    setDateTo('')
   }
 
   function openReader(article) {
@@ -1032,8 +1056,24 @@ function App() {
           article.source ===
             selectedSource
 
+        const publishedDate =
+          article.published_at
+            ? new Date(article.published_at)
+            : null
+        const articleDate =
+          publishedDate &&
+          !Number.isNaN(publishedDate.getTime())
+            ? `${publishedDate.getFullYear()}-${String(publishedDate.getMonth() + 1).padStart(2, '0')}-${String(publishedDate.getDate()).padStart(2, '0')}`
+            : ''
+        const matchesFrom =
+          !dateFrom || (articleDate && articleDate >= dateFrom)
+        const matchesTo =
+          !dateTo || (articleDate && articleDate <= dateTo)
+
         return (
           matchesSource &&
+          matchesFrom &&
+          matchesTo &&
           (activeView ===
             'latest' ||
             `${article.title} ${
@@ -1464,6 +1504,64 @@ function App() {
 
               <kbd>⌕</kbd>
             </label>
+
+            <div className="date-filter-controls" role="group" aria-label="فیلتر بازهٔ زمانی">
+              <div className="date-filter-heading">
+                <span className="date-filter-icon"><Clock3 size={17} aria-hidden="true" /></span>
+                <div>
+                  <strong>جست‌وجو در یک بازهٔ زمانی</strong>
+                  <p>تاریخ انتشار را مشخص کنید تا خبرهای همان دوره را ببینید.</p>
+                </div>
+              </div>
+              <label className="date-field">
+                <span>از تاریخ</span>
+                <input
+                  type="date"
+                  lang="en-CA"
+                  dir="ltr"
+                  value={dateFrom}
+                  max={dateTo || new Date().toISOString().slice(0, 10)}
+                  onChange={(event) => {
+                    setDateFrom(event.target.value)
+                    if (activeView === 'latest') setIsLoading(true)
+                  }}
+                  aria-label="از تاریخ (میلادی)"
+                  title="تاریخ را به میلادی انتخاب کنید"
+                />
+              </label>
+              <label className="date-field">
+                <span>تا تاریخ</span>
+                <input
+                  type="date"
+                  lang="en-CA"
+                  dir="ltr"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={(event) => {
+                    setDateTo(event.target.value)
+                    if (activeView === 'latest') setIsLoading(true)
+                  }}
+                  aria-label="تا تاریخ (میلادی)"
+                  title="تاریخ را به میلادی انتخاب کنید"
+                />
+              </label>
+              <span className="date-format-note">تقویم میلادی · سال / ماه / روز</span>
+              {(dateFrom || dateTo) ? (
+                <button
+                  className="clear-date-button"
+                  type="button"
+                  onClick={() => {
+                    setDateFrom('')
+                    setDateTo('')
+                    if (activeView === 'latest') setIsLoading(true)
+                  }}
+                >
+                  <X size={14} aria-hidden="true" />
+                  پاک‌کردن تاریخ
+                </button>
+              ) : null}
+            </div>
 
             <div
               className="source-tabs"

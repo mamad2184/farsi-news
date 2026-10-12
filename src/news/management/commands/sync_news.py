@@ -1,3 +1,4 @@
+```python
 import json
 import time
 from datetime import timedelta
@@ -246,6 +247,18 @@ class Command(BaseCommand):
 
             if not published_at or not crawled_at:
                 continue
+
+            now = timezone.now()
+
+            if published_at > now:
+                published_at = now
+
+                self.stdout.write(
+                    self.style.WARNING(
+                        "Future publication date adjusted to now: "
+                        f"{title[:80]}"
+                    )
+                )
 
             if not image:
                 image = self.get_image(url)
