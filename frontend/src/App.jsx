@@ -437,135 +437,8 @@ function StoryCard({
 }
 
 
-const PERSIAN_DATE_PARTS = new Intl.DateTimeFormat(
-  'en-US-u-ca-persian',
-  { year: 'numeric', month: 'numeric', day: 'numeric' },
-)
-const PERSIAN_MONTH_FORMATTER = new Intl.DateTimeFormat(
-  'fa-IR-u-ca-persian',
-  { month: 'long', year: 'numeric' },
-)
-const PERSIAN_DAY_FORMATTER = new Intl.DateTimeFormat(
-  'fa-IR-u-ca-persian',
-  { day: 'numeric' },
-)
-const PERSIAN_WEEKDAY_FORMATTER = new Intl.DateTimeFormat(
-  'fa-IR',
-  { weekday: 'short' },
-)
-
 function toLocalISODate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
-function getPersianDay(date) {
-  return Number(PERSIAN_DATE_PARTS.formatToParts(date).find((part) => part.type === 'day')?.value)
-}
-
-function getPersianMonthStart(date) {
-  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  while (getPersianDay(start) !== 1) {
-    start.setDate(start.getDate() - 1)
-  }
-  return start
-}
-
-function PersianDatePicker({ label, value, onChange, min, max }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [monthAnchor, setMonthAnchor] = useState(() => {
-    if (value) {
-      const [year, month, day] = value.split('-').map(Number)
-      return new Date(year, month - 1, day)
-    }
-    return new Date()
-  })
-
-  useEffect(() => {
-    if (value) {
-      const [year, month, day] = value.split('-').map(Number)
-      setMonthAnchor(new Date(year, month - 1, day))
-    }
-  }, [value])
-
-  const monthStart = getPersianMonthStart(monthAnchor)
-  const gridStart = new Date(monthStart)
-  gridStart.setDate(gridStart.getDate() - ((gridStart.getDay() + 1) % 7))
-  const days = Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(gridStart)
-    date.setDate(gridStart.getDate() + index)
-    return date
-  })
-  const weekdays = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(2024, 0, 6 + index)
-    return PERSIAN_WEEKDAY_FORMATTER.format(date)
-  })
-  const displayValue = value
-    ? new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-        year: 'numeric', month: 'long', day: 'numeric',
-      }).format(new Date(`${value}T12:00:00`))
-    : 'انتخاب تاریخ'
-
-  function moveMonth(direction) {
-    const target = new Date(monthStart)
-    target.setDate(target.getDate() + direction * 35)
-    setMonthAnchor(getPersianMonthStart(target))
-  }
-
-  return (
-    <div className="date-field">
-      <span>{label}</span>
-      <button
-        className="persian-date-trigger"
-        type="button"
-        onClick={() => setIsOpen((open) => !open)}
-        aria-expanded={isOpen}
-        aria-label={`${label}: ${displayValue}`}
-      >
-        <span>{displayValue}</span>
-        <ChevronDown size={14} aria-hidden="true" />
-      </button>
-      {isOpen ? (
-        <div className="persian-calendar" role="dialog" aria-label={`تقویم شمسی، ${label}`}>
-          <div className="persian-calendar-header">
-            <button type="button" onClick={() => moveMonth(1)} aria-label="ماه بعد">‹</button>
-            <strong>{PERSIAN_MONTH_FORMATTER.format(monthStart)}</strong>
-            <button type="button" onClick={() => moveMonth(-1)} aria-label="ماه قبل">›</button>
-          </div>
-          <div className="persian-calendar-grid" dir="rtl">
-            {weekdays.map((weekday, index) => (
-              <span className="persian-calendar-weekday" key={`${weekday}-${index}`}>{weekday}</span>
-            ))}
-            {days.map((date) => {
-              const iso = toLocalISODate(date)
-              const sameMonth = PERSIAN_MONTH_FORMATTER.format(date) === PERSIAN_MONTH_FORMATTER.format(monthStart)
-              const disabled = (min && iso < min) || (max && iso > max)
-              return (
-                <button
-                  key={iso}
-                  type="button"
-                  className={`persian-calendar-day${sameMonth ? '' : ' outside-month'}${value === iso ? ' selected' : ''}`}
-                  disabled={Boolean(disabled)}
-                  onClick={() => {
-                    onChange(iso)
-                    setIsOpen(false)
-                  }}
-                  aria-pressed={value === iso}
-                >
-                  {PERSIAN_DAY_FORMATTER.format(date)}
-                </button>
-              )
-            })}
-          </div>
-          <button className="persian-calendar-today" type="button" onClick={() => {
-            const today = toLocalISODate(new Date())
-            if ((!min || today >= min) && (!max || today <= max)) onChange(today)
-            setMonthAnchor(new Date())
-            setIsOpen(false)
-          }}>امروز</button>
-        </div>
-      ) : null}
-    </div>
-  )
 }
 
 function App() {
@@ -602,6 +475,7 @@ function App() {
     useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [relativeDays, setRelativeDays] = useState('')
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
 
   const [
@@ -1858,9 +1732,9 @@ function App() {
               >
                 <Clock3 size={16} aria-hidden="true" />
                 <span>بازهٔ زمانی</span>
-                {(dateFrom || dateTo) ? (
+                {relativeDays !== '' ? (
                   <span className="date-filter-active">
-                    {[dateFrom, dateTo].filter(Boolean).join(' تا ')}
+                    {['امروز', 'دیروز', '۲ روز پیش', '۳ روز پیش', '۴ روز پیش', '۵ روز پیش', '۶ روز پیش', '۷ روز پیش'][Number(relativeDays)]}
                   </span>
                 ) : null}
                 <ChevronDown size={15} aria-hidden="true" className="date-filter-chevron" />
@@ -1868,55 +1742,45 @@ function App() {
 
               {isDateFilterOpen ? (
                 <div
-                  className="date-filter-controls"
+                  className="date-filter-controls relative-date-controls"
                   id="date-filter-panel"
                   role="group"
                   aria-label="فیلتر بازهٔ زمانی"
                 >
-                  <div className="date-filter-heading">
-                    <div>
-                      <strong>انتخاب تاریخ انتشار</strong>
-                      <p>برای محدودکردن خبرها، تاریخ شروع و پایان را انتخاب کنید.</p>
-                    </div>
-                  </div>
-                  <PersianDatePicker
-                    label="از تاریخ"
-                    value={dateFrom}
-                    min={undefined}
-                    max={dateTo || toLocalISODate(new Date())}
-                    onChange={(value) => {
-                      setDateFrom(value)
-                      if (activeView === 'latest') setIsLoading(true)
-                    }}
-                  />
-                  <PersianDatePicker
-                    label="تا تاریخ"
-                    value={dateTo}
-                    min={dateFrom || undefined}
-                    max={toLocalISODate(new Date())}
-                    onChange={(value) => {
-                      setDateTo(value)
-                      if (activeView === 'latest') setIsLoading(true)
-                    }}
-                  />
-                  <span className="date-format-note">تقویم هجری شمسی</span>
-                  {(dateFrom || dateTo) ? (
-                    <button
-                      className="clear-date-button"
-                      type="button"
-                      onClick={() => {
-                        setDateFrom('')
-                        setDateTo('')
+                  <label className="relative-date-select">
+                    <span>نمایش خبرهای روز</span>
+                    <select
+                      value={relativeDays}
+                      onChange={(event) => {
+                        const selected = event.target.value
+                        setRelativeDays(selected)
+                        if (selected === '') {
+                          setDateFrom('')
+                          setDateTo('')
+                        } else {
+                          const target = new Date()
+                          target.setHours(12, 0, 0, 0)
+                          target.setDate(target.getDate() - Number(selected))
+                          const date = toLocalISODate(target)
+                          setDateFrom(date)
+                          setDateTo(date)
+                        }
                         if (activeView === 'latest') setIsLoading(true)
                       }}
                     >
-                      <X size={14} aria-hidden="true" />
-                      پاک‌کردن تاریخ
-                    </button>
-                  ) : null}
+                      <option value="">همهٔ روزها</option>
+                      <option value="0">امروز</option>
+                      <option value="1">دیروز</option>
+                      <option value="2">۲ روز پیش</option>
+                      <option value="3">۳ روز پیش</option>
+                      <option value="4">۴ روز پیش</option>
+                      <option value="5">۵ روز پیش</option>
+                      <option value="6">۶ روز پیش</option>
+                      <option value="7">۷ روز پیش</option>
+                    </select>
+                  </label>
                 </div>
-              ) : null}
-            </div>
+              ) : null}            </div>
 
             <div
               className="source-tabs"
