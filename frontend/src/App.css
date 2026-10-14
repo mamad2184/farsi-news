@@ -2943,3 +2943,36 @@ body {
 .persian-calendar {
   z-index: 1000;
 }
+
+/* Relative-day dropdown replaces the calendar picker. */
+.relative-date-controls {
+  display: block;
+  max-width: 420px;
+}
+
+.relative-date-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.relative-date-select select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.relative-date-select select:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  border-color: var(--accent);
+  outline-offset: 1px;
+}
