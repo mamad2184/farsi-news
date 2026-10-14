@@ -11,6 +11,7 @@ export async function requestNews({
   source = '',
   from = '',
   to = '',
+  daysAgo = '',
   signal,
 } = {}) {
   const params = new URLSearchParams({
@@ -22,6 +23,7 @@ export async function requestNews({
   const normalizedSource = source.trim()
   const normalizedFrom = from.trim()
   const normalizedTo = to.trim()
+  const normalizedDaysAgo = String(daysAgo).trim()
 
   if (normalizedQuery) {
     params.set('q', normalizedQuery)
@@ -37,6 +39,10 @@ export async function requestNews({
 
   if (normalizedTo) {
     params.set('to', normalizedTo)
+  }
+
+  if (normalizedDaysAgo) {
+    params.set('days_ago', normalizedDaysAgo)
   }
 
   const response = await fetch(
