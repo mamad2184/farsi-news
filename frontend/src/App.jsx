@@ -437,10 +437,6 @@ function StoryCard({
 }
 
 
-function toLocalISODate(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
 function App() {
   const [initialNews] =
     useState(readNewsCache)
@@ -757,7 +753,7 @@ function App() {
           query: searchQuery,
           source: sourceFilter,
           from: dateFrom,
-          to: dateTo,
+          daysAgo: relativeDays,
           signal: controller.signal,
         })
           .then((data) => {
@@ -940,9 +936,9 @@ function App() {
           activeView === 'latest'
             ? dateFrom
             : '',
-        to:
+        daysAgo:
           activeView === 'latest'
-            ? dateTo
+            ? relativeDays
             : '',
       })
 
@@ -1026,7 +1022,7 @@ function App() {
           query: query.trim(),
           source: sourceFilter,
           from: dateFrom,
-          to: dateTo,
+          daysAgo: relativeDays,
         })
 
       const knownIds = new Set(
@@ -1273,24 +1269,8 @@ function App() {
           article.source ===
             selectedSource
 
-        const publishedDate =
-          article.published_at
-            ? new Date(article.published_at)
-            : null
-        const articleDate =
-          publishedDate &&
-          !Number.isNaN(publishedDate.getTime())
-            ? `${publishedDate.getFullYear()}-${String(publishedDate.getMonth() + 1).padStart(2, '0')}-${String(publishedDate.getDate()).padStart(2, '0')}`
-            : ''
-        const matchesFrom =
-          !dateFrom || (articleDate && articleDate >= dateFrom)
-        const matchesTo =
-          !dateTo || (articleDate && articleDate <= dateTo)
-
         return (
           matchesSource &&
-          matchesFrom &&
-          matchesTo &&
           (activeView ===
             'latest' ||
             `${article.title} ${
@@ -1754,17 +1734,8 @@ function App() {
                       onChange={(event) => {
                         const selected = event.target.value
                         setRelativeDays(selected)
-                        if (selected === '') {
-                          setDateFrom('')
-                          setDateTo('')
-                        } else {
-                          const target = new Date()
-                          target.setHours(12, 0, 0, 0)
-                          target.setDate(target.getDate() - Number(selected))
-                          const date = toLocalISODate(target)
-                          setDateFrom(date)
-                          setDateTo(date)
-                        }
+                        setDateFrom('')
+                        setDateTo('')
                         if (activeView === 'latest') setIsLoading(true)
                       }}
                     >
