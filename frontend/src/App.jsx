@@ -793,7 +793,8 @@ function App() {
               !searchQuery &&
               !sourceFilter &&
               !dateFrom &&
-              !dateTo
+              !dateTo &&
+              !relativeDays
             ) {
               setLastUpdated(
                 storeNewsCache(
@@ -840,6 +841,7 @@ function App() {
     selectedSource,
     dateFrom,
     dateTo,
+    relativeDays,
   ])
 
   useEffect(() => {
@@ -977,7 +979,8 @@ function App() {
         (!query.trim() &&
           !sourceFilter &&
           !dateFrom &&
-          !dateTo)
+          !dateTo &&
+          !relativeDays)
       ) {
         setLastUpdated(
           storeNewsCache(
@@ -1070,7 +1073,8 @@ function App() {
         !query.trim() &&
         !sourceFilter &&
         !dateFrom &&
-        !dateTo
+        !dateTo &&
+        !relativeDays
       ) {
         setLastUpdated(
           storeNewsCache(
