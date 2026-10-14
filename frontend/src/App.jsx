@@ -1780,7 +1780,8 @@ function App() {
                     </select>
                   </label>
                 </div>
-              ) : null}            </div>
+              ) : null}
+            </div>
 
             <div
               className="source-tabs"
