@@ -24,6 +24,7 @@ class NewsListView(APIView):
         source = request.query_params.get("source", "").strip()
         from_date = request.query_params.get("from", "").strip()
         to_date = request.query_params.get("to", "").strip()
+        days_ago = request.query_params.get("days_ago", "").strip()
 
         if len(query) > 200:
             return Response(
@@ -37,6 +38,22 @@ class NewsListView(APIView):
                 status=400,
             )
 
+        parsed_days_ago = None
+        if days_ago:
+            try:
+                parsed_days_ago = int(days_ago)
+            except ValueError:
+                return Response(
+                    {"detail": "Invalid 'days_ago'. Use an integer from 0 to 7."},
+                    status=400,
+                )
+
+            if not 0 <= parsed_days_ago <= 7:
+                return Response(
+                    {"detail": "'days_ago' must be between 0 and 7."},
+                    status=400,
+                )
+
         parsed_from_date = None
         parsed_to_date = None
 
@@ -48,12 +65,7 @@ class NewsListView(APIView):
                 ).date()
             except ValueError:
                 return Response(
-                    {
-                        "detail": (
-                            "Invalid 'from' date. "
-                            "Use YYYY-MM-DD."
-                        )
-                    },
+                    {"detail": "Invalid 'from' date. Use YYYY-MM-DD."},
                     status=400,
                 )
 
@@ -65,12 +77,7 @@ class NewsListView(APIView):
                 ).date()
             except ValueError:
                 return Response(
-                    {
-                        "detail": (
-                            "Invalid 'to' date. "
-                            "Use YYYY-MM-DD."
-                        )
-                    },
+                    {"detail": "Invalid 'to' date. Use YYYY-MM-DD."},
                     status=400,
                 )
 
@@ -80,12 +87,7 @@ class NewsListView(APIView):
             and parsed_from_date > parsed_to_date
         ):
             return Response(
-                {
-                    "detail": (
-                        "'from' date cannot be later than "
-                        "'to' date."
-                    )
-                },
+                {"detail": "'from' date cannot be later than 'to' date."},
                 status=400,
             )
 
@@ -101,23 +103,20 @@ class NewsListView(APIView):
             )
 
         if source:
-            news = news.filter(
-                source__icontains=source
-            )
+            news = news.filter(source__icontains=source)
 
-        if parsed_from_date:
-            news = news.filter(
-                published_at__date__gte=parsed_from_date
-            )
+        if parsed_days_ago is not None:
+            target_date = timezone.localdate() - timedelta(days=parsed_days_ago)
+            news = news.filter(published_at__date=target_date)
+        else:
+            if parsed_from_date:
+                news = news.filter(published_at__date__gte=parsed_from_date)
 
-        if parsed_to_date:
-            news = news.filter(
-                published_at__date__lte=parsed_to_date
-            )
+            if parsed_to_date:
+                news = news.filter(published_at__date__lte=parsed_to_date)
 
         paginator = NewsPagination()
         page = paginator.paginate_queryset(news, request)
-
         serializer = NewsListSerializer(page, many=True)
 
         return Response({
@@ -138,14 +137,10 @@ class NewsDetailsView(APIView):
             pk=pk,
             published_at__lte=timezone.now(),
         )
-
         serializer = NewsDetailsSerializer(news)
-
         return Response(serializer.data)
 
 
 class HealthCheckView(APIView):
     def get(self, request):
-        return Response({
-            "status": "ok",
-        })
+        return Response({"status": "ok"})
