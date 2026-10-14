@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   ArrowUpLeft,
   Bookmark,
   BookmarkCheck,
@@ -635,6 +637,194 @@ function App() {
   const detailRequestRef =
     useRef(null)
 
+  const sourceTabsDragRef =
+    useRef(null)
+
+  const suppressSourceClickRef =
+    useRef(false)
+
+  const sourceTabsRef =
+    useRef(null)
+
+  function handleSourceTabsMouseDown(event) {
+    if (event.button !== 0) {
+      return
+    }
+
+    const track =
+      event.currentTarget.querySelector(
+        '.source-tabs-track',
+      )
+    const animation =
+      track?.getAnimations()[0]
+    const duration = Number(
+      animation?.effect?.getTiming().duration,
+    )
+    const groupWidth =
+      track
+        ?.querySelector('.source-tabs-group')
+        ?.getBoundingClientRect().width
+
+    if (
+      !animation ||
+      !Number.isFinite(duration) ||
+      duration <= 0 ||
+      !groupWidth
+    ) {
+      return
+    }
+
+    animation.pause()
+
+    sourceTabsDragRef.current = {
+      animation,
+      duration,
+      groupWidth,
+      pointerId: null,
+      startTime:
+        Number(animation.currentTime) || 0,
+      startX: event.clientX,
+      dragged: false,
+    }
+  }
+
+  function handleSourceTabsPointerMove(event) {
+    const drag = sourceTabsDragRef.current
+
+    if (
+      !drag ||
+      (drag.pointerId !== null &&
+        drag.pointerId !== event.pointerId)
+    ) {
+      return
+    }
+
+    const deltaX = event.clientX - drag.startX
+
+    if (!drag.dragged && Math.abs(deltaX) < 5) {
+      return
+    }
+
+    if (!drag.dragged) {
+      drag.pointerId = event.pointerId
+      drag.dragged = true
+      event.currentTarget.classList.add(
+        'source-tabs-dragging',
+      )
+
+      try {
+        event.currentTarget.setPointerCapture(
+          event.pointerId,
+        )
+      } catch {
+        // Continue dragging when pointer capture is unavailable.
+      }
+    }
+
+    event.preventDefault()
+
+    const requestedTime =
+      drag.startTime -
+      (deltaX / drag.groupWidth) *
+        drag.duration
+    const wrappedTime =
+      ((requestedTime % drag.duration) +
+        drag.duration) %
+      drag.duration
+
+    drag.animation.currentTime = wrappedTime
+  }
+
+  function handleSourceTabsPointerEnd(event) {
+    const drag = sourceTabsDragRef.current
+
+    if (
+      !drag ||
+      (drag.pointerId !== null &&
+        drag.pointerId !== event.pointerId)
+    ) {
+      return
+    }
+
+    sourceTabsDragRef.current = null
+    event.currentTarget.classList.remove(
+      'source-tabs-dragging',
+    )
+
+    if (drag.dragged) {
+      suppressSourceClickRef.current = true
+      window.setTimeout(() => {
+        suppressSourceClickRef.current = false
+      }, 0)
+    }
+
+    drag.animation.play()
+  }
+
+  function handleSourceTabsClickCapture(event) {
+    if (!suppressSourceClickRef.current) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+    suppressSourceClickRef.current = false
+  }
+
+  useEffect(() => {
+    const sourceTabs = sourceTabsRef.current
+
+    if (!sourceTabs) {
+      return undefined
+    }
+
+    sourceTabs.addEventListener(
+      'pointerdown',
+      handleSourceTabsMouseDown,
+    )
+    sourceTabs.addEventListener(
+      'pointermove',
+      handleSourceTabsPointerMove,
+    )
+    sourceTabs.addEventListener(
+      'pointerup',
+      handleSourceTabsPointerEnd,
+    )
+    sourceTabs.addEventListener(
+      'pointercancel',
+      handleSourceTabsPointerEnd,
+    )
+    sourceTabs.addEventListener(
+      'click',
+      handleSourceTabsClickCapture,
+      true,
+    )
+
+    return () => {
+      sourceTabs.removeEventListener(
+        'pointerdown',
+        handleSourceTabsMouseDown,
+      )
+      sourceTabs.removeEventListener(
+        'pointermove',
+        handleSourceTabsPointerMove,
+      )
+      sourceTabs.removeEventListener(
+        'pointerup',
+        handleSourceTabsPointerEnd,
+      )
+      sourceTabs.removeEventListener(
+        'pointercancel',
+        handleSourceTabsPointerEnd,
+      )
+      sourceTabs.removeEventListener(
+        'click',
+        handleSourceTabsClickCapture,
+        true,
+      )
+    }
+  }, [])
+
   useEffect(() => {
     document.documentElement.dataset.theme =
       theme
@@ -1169,15 +1359,35 @@ function App() {
       ? savedArticles
       : articles
 
+  const publisherNames = [
+    'نبض بورس - اخبار بورس تهران، آموزش بازار سرمایه و تحلیل سهام',
+    'خبرگزاری بین المللی قرآن (ایکنا)',
+    'ارزدیجیتال',
+    'صایب خبرهای داغ امروز تازه‌ترین اخبار ایران و جهان',
+    'بورس نیوز | Bourse News',
+    'Pedal',
+    'اقتصاد آنلاین',
+    'پایگاه خبری-سبک زندگی نگارمگ | negarmag.com',
+    'باشگاه خبرنگاران دانشجویی ایران',
+    'خبرگزاری ایسنا | صفحه اصلی | ISNA News Agency',
+    'خبرگزاری خبرآنلاین - آخرین اخبار ایران و جهان | Khabaronline',
+    'خبرگزاری مهر | اخبار ایران و جهان | Mehr News Agency',
+    'یوتوتایمز',
+    'ایرنا فارسی',
+    'آخرین اخبار در وبانگاه - webangah',
+    'Zoomit',
+  ]
+
   const sources = [
-    ...new Set(
-      viewArticles
+    ...new Set([
+      ...publisherNames,
+      ...viewArticles
         .map(
           (article) =>
             article.source,
         )
         .filter(Boolean),
-    ),
+    ]),
   ]
 
   const filteredArticles =
@@ -1712,37 +1922,37 @@ function App() {
               className="source-tabs"
               role="group"
               aria-label="فیلتر منابع خبری"
+              ref={sourceTabsRef}
             >
-              {[
-                'همه',
-                ...sources,
-              ].map(
-                (source) => (
-                  <button
-                    className={
-                      selectedSource ===
-                      source
-                        ? 'source-tab source-tab-active'
-                        : 'source-tab'
-                    }
-                    key={
-                      source
-                    }
-                    type="button"
-                    onClick={() =>
-                      setSelectedSource(
-                        source,
-                      )
-                    }
-                    aria-pressed={
-                      selectedSource ===
-                      source
-                    }
+              <div className="source-tabs-track">
+                {[false, true].map((isDuplicate) => (
+                  <div
+                    className="source-tabs-group"
+                    key={String(isDuplicate)}
+                    aria-hidden={isDuplicate ? 'true' : undefined}
                   >
-                    {source}
-                  </button>
-                ),
-              )}
+                    {[
+                      'همه',
+                      ...sources,
+                    ].map((source) => (
+                      <button
+                        className={
+                          selectedSource === source
+                            ? 'source-tab source-tab-active'
+                            : 'source-tab'
+                        }
+                        key={`${isDuplicate ? 'duplicate-' : ''}${source}`}
+                        type="button"
+                        tabIndex={isDuplicate ? -1 : undefined}
+                        onClick={isDuplicate ? undefined : () => setSelectedSource(source)}
+                        aria-pressed={selectedSource === source}
+                      >
+                        {source}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -2021,7 +2231,59 @@ function App() {
             </div>
           ) : null}
         </section>
+
+        <div
+          id="news-list-end"
+          className="news-list-end"
+          aria-hidden="true"
+        />
       </main>
+
+      <div
+        className="news-jump-controls"
+        role="group"
+        aria-label="پیمایش فهرست خبرها"
+      >
+        <button
+          type="button"
+          aria-label="رفتن به ابتدای خبرها"
+          title="ابتدای خبرها"
+          onClick={() => {
+            document
+              .getElementById('latest-heading')
+              ?.scrollIntoView({
+                behavior: window.matchMedia(
+                  '(prefers-reduced-motion: reduce)',
+                ).matches
+                  ? 'auto'
+                  : 'smooth',
+                block: 'start',
+              })
+          }}
+        >
+          <ArrowUp size={13} aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          aria-label="رفتن به انتهای خبرها"
+          title="انتهای خبرها"
+          onClick={() => {
+            document
+              .getElementById('news-list-end')
+              ?.scrollIntoView({
+                behavior: window.matchMedia(
+                  '(prefers-reduced-motion: reduce)',
+                ).matches
+                  ? 'auto'
+                  : 'smooth',
+                block: 'end',
+              })
+          }}
+        >
+          <ArrowDown size={13} aria-hidden="true" />
+        </button>
+      </div>
 
       <footer className="site-footer">
         <a
