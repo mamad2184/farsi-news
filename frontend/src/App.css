@@ -2974,7 +2974,7 @@ body {
 
 @keyframes featuredStoryGrow {
   from { scale: 1; }
-  to { scale: 1.018; }
+  to { scale: 1.06; }
 }
 
 @media (prefers-reduced-motion: reduce) {
