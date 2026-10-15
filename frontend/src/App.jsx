@@ -1296,8 +1296,30 @@ function App() {
       },
     )
 
+  const [featuredIndex, setFeaturedIndex] = useState(0)
+  const featuredRotationKey = filteredArticles
+    .map((article) => article.id)
+    .join('|')
+
+  useEffect(() => {
+    if (activeView !== 'latest' || filteredArticles.length < 2) {
+      setFeaturedIndex(0)
+      return undefined
+    }
+
+    const rotation = window.setInterval(() => {
+      setFeaturedIndex((currentIndex) =>
+        (currentIndex + 1) % filteredArticles.length,
+      )
+    }, 30_000)
+
+    return () => window.clearInterval(rotation)
+  }, [activeView, featuredRotationKey, filteredArticles.length])
+
   const featuredArticle =
-    filteredArticles[0]
+    filteredArticles.length > 0
+      ? filteredArticles[featuredIndex % filteredArticles.length]
+      : undefined
 
   const isSearchPending =
     activeView === 'latest' &&
@@ -1305,7 +1327,9 @@ function App() {
       loadedQuery
 
   const remainingArticles =
-    filteredArticles.slice(1)
+    filteredArticles.filter(
+      (article) => article.id !== featuredArticle?.id,
+    )
 
   const hasMoreArticles =
     activeView === 'latest' &&
@@ -1939,6 +1963,7 @@ function App() {
               aria-live="polite"
             >
               <StoryCard
+                key={featuredArticle.id}
                 article={
                   featuredArticle
                 }
