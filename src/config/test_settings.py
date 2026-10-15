@@ -30,3 +30,11 @@ DATABASES["default"] = {
 }
 
 TEST_RUNNER = "config.test_runner.PersistentTestRunner"
+
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    },
+}

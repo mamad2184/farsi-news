@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -17,7 +20,7 @@ class NewsPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
-
+@method_decorator(cache_page(30), name="dispatch")
 class NewsListView(APIView):
     def get(self, request):
         query = request.query_params.get("q", "").strip()
@@ -130,6 +133,8 @@ class NewsListView(APIView):
         })
 
 
+
+@method_decorator(cache_page(600), name="dispatch")
 class NewsDetailsView(APIView):
     def get(self, request, pk):
         news = get_object_or_404(
