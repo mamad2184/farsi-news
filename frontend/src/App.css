@@ -229,8 +229,7 @@ img {
   gap: 8px;
 }
 
-.theme-toggle,
-.api-link {
+.theme-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -255,18 +254,12 @@ img {
     background 180ms ease;
 }
 
-.theme-toggle:hover,
-.api-link:hover {
+.theme-toggle:hover:hover {
   color: var(--accent);
   border-color: var(--accent);
   transform: translateY(-2px);
 }
 
-.api-link {
-  padding: 0 13px;
-  font-size: 12px;
-  font-weight: 700;
-}
 
 /* =========================
    HEADLINE RAIL
@@ -1803,8 +1796,7 @@ input:focus-visible {
     gap: 5px;
   }
 
-  .theme-toggle,
-  .api-link {
+  .theme-toggle {
     width: 38px;
     min-width: 38px;
     height: 38px;
@@ -1814,10 +1806,7 @@ input:focus-visible {
     border-radius: 11px;
   }
 
-  .api-link span {
-    display: none;
-  }
-
+  
   /* ticker */
 
   .headline-rail {
@@ -2283,8 +2272,7 @@ input:focus-visible {
     text-overflow: ellipsis;
   }
 
-  .theme-toggle,
-  .api-link {
+  .theme-toggle {
     width: 36px;
     min-width: 36px;
     height: 36px;
@@ -2528,7 +2516,7 @@ body {
 .top-nav { padding: 5px; border-radius: 16px; background: var(--surface); box-shadow: none; }
 .top-nav button, .top-nav a { min-height: 42px; padding-inline: 17px; border-radius: 12px; font-size: 13px; }
 .top-nav .nav-active { background: var(--text); color: var(--bg); }
-.theme-toggle, .api-link { border-radius: 14px; min-height: 44px; height: 44px; }
+.theme-toggle { border-radius: 14px; min-height: 44px; height: 44px; }
 .headline-rail { max-width: 1400px; padding-block: 14px; }
 .rail-label { color: var(--accent); font-size: 12px; }
 .rail-story { font-size: 12px; }
