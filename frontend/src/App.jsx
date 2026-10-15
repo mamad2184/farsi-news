@@ -8,7 +8,6 @@ import {
   BookmarkCheck,
   ChevronDown,
   Clock3,
-  ExternalLink,
   Moon,
   Newspaper,
   Radio,
@@ -19,7 +18,6 @@ import {
   X,
 } from 'lucide-react'
 import {
-  API_BASE_URL,
   requestNews,
   requestNewsDetails,
 } from './api'
@@ -1458,17 +1456,6 @@ function App() {
             )}
           </button>
 
-          <a
-            className="api-link"
-            href={`${API_BASE_URL}/news/`}
-          >
-            <span>API</span>
-
-            <ExternalLink
-              size={15}
-              aria-hidden="true"
-            />
-          </a>
         </div>
       </header>
 
