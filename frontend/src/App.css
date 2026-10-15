@@ -2966,11 +2966,15 @@ body {
 }
 
 
-/* Only the featured image gently grows during each 30-second rotation. */
+/* Featured image zooms in; each new featured story cascades smoothly into view. */
 .story-image-featured img {
   transform: scale(1);
   transform-origin: center;
   animation: featuredImageGrow 30s linear both;
+}
+
+.lead-story {
+  animation: featuredStoryCascade 650ms cubic-bezier(.22, .75, .25, 1) both;
 }
 
 @keyframes featuredImageGrow {
@@ -2978,8 +2982,23 @@ body {
   to { transform: scale(1.12); }
 }
 
+@keyframes featuredStoryCascade {
+  from {
+    opacity: 0;
+    transform: translateY(-22px);
+    clip-path: inset(0 0 100% 0 round 30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0 0 round 30px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .story-image-featured img {
+  .story-image-featured img,
+  .lead-story {
     animation: none;
+    clip-path: none;
   }
 }
