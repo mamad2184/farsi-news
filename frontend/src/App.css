@@ -2966,19 +2966,20 @@ body {
 }
 
 
-/* Featured story gently grows throughout each 30-second rotation. */
-.lead-story {
+/* Only the featured image gently grows during each 30-second rotation. */
+.story-image-featured img {
+  transform: scale(1);
   transform-origin: center;
-  animation: featuredStoryGrow 30s linear both;
+  animation: featuredImageGrow 30s linear both;
 }
 
-@keyframes featuredStoryGrow {
-  from { scale: 1; }
-  to { scale: 1.06; }
+@keyframes featuredImageGrow {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lead-story {
+  .story-image-featured img {
     animation: none;
   }
 }
