@@ -2964,3 +2964,21 @@ body {
   border-color: var(--accent);
   outline-offset: 1px;
 }
+
+
+/* Featured story gently grows throughout each 30-second rotation. */
+.lead-story {
+  transform-origin: center;
+  animation: featuredStoryGrow 30s linear both;
+}
+
+@keyframes featuredStoryGrow {
+  from { scale: 1; }
+  to { scale: 1.018; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lead-story {
+    animation: none;
+  }
+}
