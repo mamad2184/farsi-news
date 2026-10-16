@@ -2320,10 +2320,7 @@ function NewsApp() {
 
 function App() {
   const [showLogin, setShowLogin] = useState(
-    () =>
-      window.location.hash === '#login' &&
-      !(localStorage.getItem('farsinews:access-token') &&
-        localStorage.getItem('farsinews:username')),
+    window.location.hash === '#login',
   )
   const [signedInUser, setSignedInUser] = useState(
     () => localStorage.getItem('farsinews:username') || '',
@@ -2336,11 +2333,6 @@ function App() {
         localStorage.getItem('farsinews:username'),
       )
       setSignedInUser(localStorage.getItem('farsinews:username') || '')
-      if (window.location.hash === '#login' && isSignedIn) {
-        setShowLogin(false)
-        window.location.hash = ''
-        return
-      }
       setShowLogin(window.location.hash === '#login')
     }
 
