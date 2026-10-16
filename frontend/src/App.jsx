@@ -2323,10 +2323,14 @@ function App() {
   const [showLogin, setShowLogin] = useState(
     window.location.hash === '#login',
   )
+  const [signedInUser, setSignedInUser] = useState(
+    () => localStorage.getItem('farsinews:username') || '',
+  )
 
   useEffect(() => {
     const syncRoute = () => {
       setShowLogin(window.location.hash === '#login')
+      setSignedInUser(localStorage.getItem('farsinews:username') || '')
     }
 
     window.addEventListener('hashchange', syncRoute)
@@ -2337,11 +2341,25 @@ function App() {
     return <LoginPage />
   }
 
+  function signOut() {
+    localStorage.removeItem('farsinews:access-token')
+    localStorage.removeItem('farsinews:refresh-token')
+    localStorage.removeItem('farsinews:username')
+    setSignedInUser('')
+  }
+
   return (
     <>
-      <a className="auth-entry" href="#login">
-        ورود / ثبت‌نام
-      </a>
+      {signedInUser ? (
+        <div className="auth-entry auth-entry-signed-in">
+          <span>سلام، {signedInUser}</span>
+          <button type="button" onClick={signOut}>خروج</button>
+        </div>
+      ) : (
+        <a className="auth-entry" href="#login">
+          ورود / ثبت‌نام
+        </a>
+      )}
       <NewsApp />
     </>
   )
