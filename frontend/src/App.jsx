@@ -2356,7 +2356,7 @@ function App() {
           <button type="button" onClick={signOut}>خروج</button>
         </div>
       ) : (
-        <a className="auth-entry" href="#login">
+        <a className="auth-entry" href="#login" style={{ display: "inline-flex", visibility: "visible", opacity: 1, zIndex: 9999 }}>
           ورود / ثبت‌نام
         </a>
       )}
