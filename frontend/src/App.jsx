@@ -2320,7 +2320,10 @@ function NewsApp() {
 
 function App() {
   const [showLogin, setShowLogin] = useState(
-    window.location.hash === '#login',
+    () =>
+      window.location.hash === '#login' &&
+      !(localStorage.getItem('farsinews:access-token') &&
+        localStorage.getItem('farsinews:username')),
   )
   const [signedInUser, setSignedInUser] = useState(
     () => localStorage.getItem('farsinews:username') || '',
@@ -2328,8 +2331,17 @@ function App() {
 
   useEffect(() => {
     const syncRoute = () => {
-      setShowLogin(window.location.hash === '#login')
+      const isSignedIn = Boolean(
+        localStorage.getItem('farsinews:access-token') &&
+        localStorage.getItem('farsinews:username'),
+      )
       setSignedInUser(localStorage.getItem('farsinews:username') || '')
+      if (window.location.hash === '#login' && isSignedIn) {
+        setShowLogin(false)
+        window.location.hash = ''
+        return
+      }
+      setShowLogin(window.location.hash === '#login')
     }
 
     window.addEventListener('hashchange', syncRoute)
