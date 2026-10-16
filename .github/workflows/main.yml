@@ -34,4 +34,5 @@ jobs:
           NEON_DB_PASSWORD: ${{ secrets.NEON_DB_PASSWORD }}
           NEON_DB_HOST: ${{ secrets.NEON_DB_HOST }}
           NEON_DB_PORT: ${{ secrets.NEON_DB_PORT }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
         run: python manage.py sync_news
