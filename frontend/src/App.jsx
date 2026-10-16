@@ -2349,16 +2349,15 @@ function App() {
 
   return (
     <>
-      {signedInUser ? (
-        <div className="auth-entry auth-entry-signed-in">
-          <span>سلام، {signedInUser}</span>
-          <button type="button" onClick={signOut}>خروج</button>
-        </div>
-      ) : (
-        <a className="auth-entry" href="#login" style={{ display: "inline-flex", visibility: "visible", opacity: 1, zIndex: 9999 }}>
+      <div className={`auth-entry${signedInUser ? ' auth-entry-signed-in' : ''}`}>
+        {signedInUser ? <span>سلام، {signedInUser}</span> : null}
+        <a href="#login" style={{ display: "inline-flex", visibility: "visible", opacity: 1, zIndex: 9999 }}>
           ورود / ثبت‌نام
         </a>
-      )}
+        {signedInUser ? (
+          <button type="button" onClick={signOut}>خروج</button>
+        ) : null}
+      </div>
       <NewsApp />
     </>
   )
