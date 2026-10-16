@@ -23,6 +23,7 @@ import {
   requestNewsDetails,
 } from './api'
 import './App.css'
+import LoginPage from './LoginPage'
 
 const SAVED_ARTICLES_KEY = 'farsinews:saved-articles'
 const NEWS_CACHE_KEY = 'farsinews:latest-news'
@@ -436,7 +437,7 @@ function StoryCard({
 }
 
 
-function App() {
+function NewsApp() {
   const [initialNews] =
     useState(readNewsCache)
 
@@ -2315,6 +2316,34 @@ function App() {
         </div>
       ) : null}
     </div>
+  )
+}
+
+function App() {
+  const [showLogin, setShowLogin] = useState(
+    window.location.hash === '#login',
+  )
+
+  useEffect(() => {
+    const syncRoute = () => {
+      setShowLogin(window.location.hash === '#login')
+    }
+
+    window.addEventListener('hashchange', syncRoute)
+    return () => window.removeEventListener('hashchange', syncRoute)
+  }, [])
+
+  if (showLogin) {
+    return <LoginPage />
+  }
+
+  return (
+    <>
+      <a className="auth-entry" href="#login">
+        ورود / ثبت‌نام
+      </a>
+      <NewsApp />
+    </>
   )
 }
 
