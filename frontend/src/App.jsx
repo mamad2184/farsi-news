@@ -375,22 +375,27 @@ function StoryCard({
     <article
       className={
         featured
-          ? 'lead-story'
-          : 'story-card'
+          ? 'lead-story story-card-clickable'
+          : 'story-card story-card-clickable'
       }
+      role="link"
+      tabIndex={0}
+      aria-label={`جزئیات خبر: ${article.title}`}
+      onClick={() => onOpen(article)}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onOpen(article)
+        }
+      }}
     >
-      <a
-        className="story-image-link"
-        href={article.url}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={`خواندن خبر: ${article.title}`}
-      >
+      <div className="story-image-link">
         <ArticleImage
           article={article}
           featured={featured}
         />
-      </a>
+      </div>
 
       <div className="story-content">
         <StoryMeta
@@ -400,16 +405,8 @@ function StoryCard({
           relativeTime
         />
 
-        <h3>
-          <button
-            className="story-title"
-            type="button"
-            onClick={() =>
-              onOpen(article)
-            }
-          >
-            {article.title}
-          </button>
+        <h3 className="story-title">
+          {article.title}
         </h3>
 
         {article.description ? (
@@ -423,6 +420,7 @@ function StoryCard({
           href={article.url}
           target="_blank"
           rel="noreferrer"
+          onClick={(event) => event.stopPropagation()}
         >
           متن کامل در منبع خبر
 
