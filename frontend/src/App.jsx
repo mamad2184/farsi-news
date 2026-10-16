@@ -2349,9 +2349,15 @@ function App() {
 
   return (
     <>
-      <div className={`auth-entry${signedInUser ? ' auth-entry-signed-in' : ''}`}>
+      <div
+        className={`auth-entry${signedInUser ? ' auth-entry-signed-in' : ''}`}
+        style={{ position: 'fixed', top: 16, left: 16, zIndex: 2147483647, display: 'flex', visibility: 'visible', opacity: 1, background: '#fffdf8', color: '#183b36' }}
+      >
         {signedInUser ? <span>سلام، {signedInUser}</span> : null}
-        <a href="#login" style={{ display: "inline-flex", visibility: "visible", opacity: 1, zIndex: 9999 }}>
+        <a
+          href="#login"
+          style={{ display: 'inline-flex', position: 'relative', zIndex: 2147483647, visibility: 'visible', opacity: 1, color: '#183b36', background: '#fffdf8', fontWeight: 700, textDecoration: 'none' }}
+        >
           ورود / ثبت‌نام
         </a>
         {signedInUser ? (
