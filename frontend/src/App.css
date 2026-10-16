@@ -3034,3 +3034,13 @@ body {
 
 .auth-entry-signed-in { gap: 12px; }
 .auth-entry-signed-in button { border: 0; border-right: 1px solid rgba(31,75,69,.18); padding: 2px 0 2px 0; padding-right: 12px; background: transparent; color: #a34d43; font: inherit; font-weight: 700; cursor: pointer; }
+
+
+.story-card-clickable {
+  cursor: pointer;
+}
+
+.story-card-clickable:focus-visible {
+  outline: 3px solid var(--line-strong);
+  outline-offset: 4px;
+}
