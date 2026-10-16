@@ -1,6 +1,11 @@
 from datetime import datetime, timedelta
+import os
+import threading
 
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.core.management import call_command
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.db.models import Q
@@ -149,3 +154,21 @@ class NewsDetailsView(APIView):
 class HealthCheckView(APIView):
     def get(self, request):
         return Response({"status": "ok"})
+
+
+
+
+
+@csrf_exempt
+@require_POST
+def trigger_news_sync(request):
+    token = os.environ.get("NEWS_SYNC_TOKEN")
+
+    if not token or request.headers.get("Authorization") != f"Bearer {token}":
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    def run_sync():
+        call_command("sync_news")
+
+    threading.Thread(target=run_sync, daemon=True).start()
+    return JsonResponse({"status": "sync started"}, status=202)

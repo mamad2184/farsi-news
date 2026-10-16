@@ -4,6 +4,7 @@ from .views import (
     HealthCheckView,
     NewsDetailsView,
     NewsListView,
+    trigger_news_sync,
 )
 
 
@@ -23,4 +24,10 @@ urlpatterns = [
         NewsDetailsView.as_view(),
         name="news-details",
     ),
+
+    path(
+    "internal/sync-news/",
+    trigger_news_sync,
+    name="trigger-news-sync",
+),
 ]
