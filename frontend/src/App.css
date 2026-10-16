@@ -3031,3 +3031,6 @@ body {
 @media (max-width: 640px) {
   .auth-entry { top: 12px; left: 12px; padding: 8px 12px; }
 }
+
+.auth-entry-signed-in { gap: 12px; }
+.auth-entry-signed-in button { border: 0; border-right: 1px solid rgba(31,75,69,.18); padding: 2px 0 2px 0; padding-right: 12px; background: transparent; color: #a34d43; font: inherit; font-weight: 700; cursor: pointer; }
