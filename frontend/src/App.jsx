@@ -23,6 +23,7 @@ import {
   requestNewsDetails,
 } from './api'
 import './App.css'
+import LoginPage from './LoginPage'
 
 const SAVED_ARTICLES_KEY = 'farsinews:saved-articles'
 const NEWS_CACHE_KEY = 'farsinews:latest-news'
@@ -436,7 +437,7 @@ function StoryCard({
 }
 
 
-function App() {
+function NewsApp() {
   const [initialNews] =
     useState(readNewsCache)
 
@@ -2315,6 +2316,52 @@ function App() {
         </div>
       ) : null}
     </div>
+  )
+}
+
+function App() {
+  const [showLogin, setShowLogin] = useState(
+    window.location.hash === '#login',
+  )
+  const [signedInUser, setSignedInUser] = useState(
+    () => localStorage.getItem('farsinews:username') || '',
+  )
+
+  useEffect(() => {
+    const syncRoute = () => {
+      setShowLogin(window.location.hash === '#login')
+      setSignedInUser(localStorage.getItem('farsinews:username') || '')
+    }
+
+    window.addEventListener('hashchange', syncRoute)
+    return () => window.removeEventListener('hashchange', syncRoute)
+  }, [])
+
+  if (showLogin) {
+    return <LoginPage />
+  }
+
+  function signOut() {
+    localStorage.removeItem('farsinews:access-token')
+    localStorage.removeItem('farsinews:refresh-token')
+    localStorage.removeItem('farsinews:username')
+    setSignedInUser('')
+  }
+
+  return (
+    <>
+      {signedInUser ? (
+        <div className="auth-entry auth-entry-signed-in">
+          <span>سلام، {signedInUser}</span>
+          <button type="button" onClick={signOut}>خروج</button>
+        </div>
+      ) : (
+        <a className="auth-entry" href="#login">
+          ورود / ثبت‌نام
+        </a>
+      )}
+      <NewsApp />
+    </>
   )
 }
 
