@@ -339,9 +339,10 @@ function StoryMeta({
             : ''
         }`}
         type="button"
-        onClick={() =>
+        onClick={(event) => {
+          event.stopPropagation()
           onToggleSaved(article)
-        }
+        }}
         aria-label={
           isSaved
             ? `حذف از نشان‌شده‌ها: ${article.title}`
