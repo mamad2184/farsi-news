@@ -49,13 +49,59 @@ export default function LoginPage() {
       localStorage.setItem('farsinews:access-token', data.access)
       if (data.refresh) localStorage.setItem('farsinews:refresh-token', data.refresh)
       localStorage.setItem('farsinews:username', username.trim())
-      window.location.hash = ''
+      window.location.hash = '#login'
       window.location.reload()
     } catch (err) {
       setError(err.message || 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const savedUsername = localStorage.getItem('farsinews:username') || ''
+  const hasSession = Boolean(localStorage.getItem('farsinews:access-token') && savedUsername)
+
+  if (hasSession && window.location.hash === '#login') {
+    return (
+      <main className="auth-page" dir="ltr">
+        <div className="auth-glow auth-glow-one" />
+        <div className="auth-glow auth-glow-two" />
+        <a className="auth-back" href="#" aria-label="Back to news">
+          <ArrowLeft size={17} /> Back to news
+        </a>
+        <section className="auth-shell">
+          <aside className="auth-story">
+            <div className="auth-brand">
+              <span className="auth-brand-icon"><Newspaper size={23} strokeWidth={1.8} /></span>
+              <span>News<span className="auth-brand-dot">.</span></span>
+            </div>
+            <div className="auth-story-copy">
+              <span className="auth-eyebrow"><LockKeyhole size={14} /> Account status</span>
+              <h1>You’re<br /><span>signed in.</span></h1>
+              <p>Your account is active and you can continue reading the latest news.</p>
+            </div>
+          </aside>
+          <section className="auth-form-panel">
+            <div className="auth-form-heading">
+              <span className="auth-form-kicker">Signed-in account</span>
+              <h2>Welcome back, {savedUsername}</h2>
+              <p>You are successfully logged in.</p>
+            </div>
+            <div className="auth-message auth-success" role="status">✓ Login successful</div>
+            <a className="auth-submit" href="#" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center' }}>
+              Continue to news
+            </a>
+            <button className="auth-switch" type="button" onClick={() => {
+              localStorage.removeItem('farsinews:access-token')
+              localStorage.removeItem('farsinews:refresh-token')
+              localStorage.removeItem('farsinews:username')
+              window.location.hash = '#login'
+              window.location.reload()
+            }}>Sign out</button>
+          </section>
+        </section>
+      </main>
+    )
   }
 
   return (
