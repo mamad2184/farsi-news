@@ -63,33 +63,33 @@ export default function LoginPage() {
 
   if (hasSession && window.location.hash === '#login') {
     return (
-      <main className="auth-page" dir="ltr">
+      <main className="auth-page" dir="rtl">
         <div className="auth-glow auth-glow-one" />
         <div className="auth-glow auth-glow-two" />
-        <a className="auth-back" href="#" aria-label="Back to news">
-          <ArrowLeft size={17} /> Back to news
+        <a className="auth-back" href="#" aria-label="بازگشت به خبرها">
+          <ArrowLeft size={17} /> بازگشت به خبرها
         </a>
         <section className="auth-shell">
           <aside className="auth-story">
             <div className="auth-brand">
               <span className="auth-brand-icon"><Newspaper size={23} strokeWidth={1.8} /></span>
-              <span>News<span className="auth-brand-dot">.</span></span>
+              <span>خبرنگار<span className="auth-brand-dot">.</span></span>
             </div>
             <div className="auth-story-copy">
-              <span className="auth-eyebrow"><LockKeyhole size={14} /> Account status</span>
-              <h1>You’re<br /><span>signed in.</span></h1>
-              <p>Your account is active and you can continue reading the latest news.</p>
+              <span className="auth-eyebrow"><LockKeyhole size={14} /> وضعیت حساب</span>
+              <h1>شما با موفقیت<br /><span>وارد شدید.</span></h1>
+              <p>حساب شما فعال است و می‌توانید به خواندن تازه‌ترین خبرها ادامه دهید.</p>
             </div>
           </aside>
           <section className="auth-form-panel">
             <div className="auth-form-heading">
-              <span className="auth-form-kicker">Signed-in account</span>
-              <h2>Welcome back, {savedUsername}</h2>
-              <p>You are successfully logged in.</p>
+              <span className="auth-form-kicker">حساب کاربری</span>
+              <h2>خوش برگشتی، {savedUsername}</h2>
+              <p>با موفقیت وارد حساب کاربری خود شده‌اید.</p>
             </div>
-            <div className="auth-message auth-success" role="status">✓ Login successful</div>
+            <div className="auth-message auth-success" role="status">✓ ورود موفقیت‌آمیز بود</div>
             <a className="auth-submit" href="#" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center' }}>
-              Continue to news
+              بازگشت به خبرها
             </a>
             <button className="auth-switch" type="button" onClick={() => {
               localStorage.removeItem('farsinews:access-token')
@@ -97,7 +97,7 @@ export default function LoginPage() {
               localStorage.removeItem('farsinews:username')
               window.location.hash = '#login'
               window.location.reload()
-            }}>Sign out</button>
+            }}>خروج از حساب</button>
           </section>
         </section>
       </main>
