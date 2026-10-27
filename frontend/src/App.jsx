@@ -436,7 +436,7 @@ function StoryCard({
 }
 
 
-function NewsApp() {
+function NewsApp({ signedInUser, onSignOut }) {
   const [initialNews] =
     useState(readNewsCache)
 
@@ -1481,6 +1481,13 @@ function NewsApp() {
             )}
           </button>
 
+          <div className={`auth-entry${signedInUser ? ' auth-entry-signed-in' : ''}`}>
+            {signedInUser ? <span>سلام، {signedInUser}</span> : null}
+            <a href="#login">ورود / ثبت‌نام</a>
+            {signedInUser ? (
+              <button type="button" onClick={onSignOut}>خروج</button>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -2353,22 +2360,10 @@ function App() {
 
   return (
     <>
-      <div
-        className={`auth-entry${signedInUser ? ' auth-entry-signed-in' : ''}`}
-        style={{ position: 'fixed', top: 16, left: 16, zIndex: 2147483647, display: 'flex', visibility: 'visible', opacity: 1, background: '#fffdf8', color: '#183b36' }}
-      >
-        {signedInUser ? <span>سلام، {signedInUser}</span> : null}
-        <a
-          href="#login"
-          style={{ display: 'inline-flex', position: 'relative', zIndex: 2147483647, visibility: 'visible', opacity: 1, color: '#183b36', background: '#fffdf8', fontWeight: 700, textDecoration: 'none' }}
-        >
-          ورود / ثبت‌نام
-        </a>
-        {signedInUser ? (
-          <button type="button" onClick={signOut}>خروج</button>
-        ) : null}
-      </div>
-      <NewsApp />
+      <NewsApp
+        signedInUser={signedInUser}
+        onSignOut={signOut}
+      />
     </>
   )
 }
