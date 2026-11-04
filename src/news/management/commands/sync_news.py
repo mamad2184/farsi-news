@@ -1,6 +1,10 @@
 
 import json
+import os
 import time
+from pathlib import Path
+
+from dotenv import load_dotenv
 from datetime import timedelta
 
 import requests
@@ -10,6 +14,10 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from news.models import News
+
+
+# Load the project-root .env file when this command runs.
+load_dotenv(Path(__file__).resolve().parents[4] / ".env")
 
 
 class Command(BaseCommand):
@@ -100,6 +108,10 @@ class Command(BaseCommand):
         return None
 
     def fetch_articles(self, from_time_string):
+        api_key = os.getenv("FNA_KEY")
+        if not api_key:
+            raise RuntimeError("FNA_KEY is missing. Add FNA_KEY=your_api_key to the project-root .env file.")
+
         last_error = None
 
         for attempt in range(
@@ -116,6 +128,10 @@ class Command(BaseCommand):
                         "from": from_time_string,
                     },
                     timeout=self.API_TIMEOUT,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Accept": "application/json",
+                    },
                 )
 
                 response.raise_for_status()
@@ -210,7 +226,7 @@ class Command(BaseCommand):
             self.stderr.write(
                 self.style.ERROR(str(exc))
             )
-            return
+            raise
 
         articles = data.get("results", [])
 
