@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import News
+from .utils.categories import NEWS_CATEGORIES
 from .serializers import NewsDetailsSerializer, NewsListSerializer
 
 
@@ -30,6 +31,7 @@ class NewsListView(APIView):
     def get(self, request):
         query = request.query_params.get("q", "").strip()
         source = request.query_params.get("source", "").strip()
+        category = request.query_params.get("category", "").strip()
         from_date = request.query_params.get("from", "").strip()
         to_date = request.query_params.get("to", "").strip()
         days_ago = request.query_params.get("days_ago", "").strip()
@@ -37,6 +39,18 @@ class NewsListView(APIView):
         if len(query) > 200:
             return Response(
                 {"detail": "Search query is too long."},
+                status=400,
+            )
+
+        if len(category) > 50:
+            return Response(
+                {"detail": "Category is too long."},
+                status=400,
+            )
+
+        if category and category not in NEWS_CATEGORIES:
+            return Response(
+                {"detail": "Invalid category."},
                 status=400,
             )
 
@@ -112,6 +126,15 @@ class NewsListView(APIView):
 
         if source:
             news = news.filter(source__icontains=source)
+
+        if category:
+            category_query = Q()
+            for keyword in NEWS_CATEGORIES[category]:
+                category_query |= (
+                    Q(title__icontains=keyword)
+                    | Q(description__icontains=keyword)
+                )
+            news = news.filter(category_query)
 
         if parsed_days_ago is not None:
             target_date = timezone.localdate() - timedelta(days=parsed_days_ago)
