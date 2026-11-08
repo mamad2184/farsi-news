@@ -10,6 +10,7 @@ import {
   Clock3,
   ExternalLink,
   Moon,
+  Menu,
   Newspaper,
   Radio,
   RefreshCw,
@@ -482,6 +483,8 @@ function NewsApp({ signedInUser, onSignOut }) {
     selectedCategory,
     setSelectedCategory,
   ] = useState('همه')
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const [activeView, setActiveView] =
     useState('latest')
@@ -1471,6 +1474,17 @@ function NewsApp({ signedInUser, onSignOut }) {
 
         <div className="top-actions">
           <button
+            className="sidebar-toggle"
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="بازکردن منوی سایت"
+            aria-expanded={isSidebarOpen}
+            aria-controls="site-sidebar"
+          >
+            <Menu size={22} aria-hidden="true" />
+          </button>
+
+          <button
             className="theme-toggle"
             type="button"
             onClick={() =>
@@ -1517,47 +1531,68 @@ function NewsApp({ signedInUser, onSignOut }) {
         </div>
       </div>
 
-        <nav
-          className="category-nav"
-          aria-label="دسته‌بندی خبرها"
-        >
-          <div
-            className="category-nav-inner"
-            role="group"
-            aria-label="انتخاب دسته‌بندی"
-          >
-            {['همه', 'سیاسی', 'اقتصادی', 'ورزشی', 'فناوری'].map((category) => (
-              <button
-                className={
-                  selectedCategory === category
-                    ? 'category-nav-button category-nav-button-active'
-                    : 'category-nav-button'
-                }
-                key={category}
-                type="button"
-                onClick={() => {
-                  if (
-                    selectedCategory === category &&
-                    activeView === 'latest'
-                  ) {
-                    return
-                  }
-
-                  setIsLoading(true)
-                  setError('')
-                  setLoadMoreError('')
-                  setActiveView('latest')
-                  setSelectedSource('همه')
-                  setSelectedCategory(category)
-                }}
-                aria-pressed={selectedCategory === category}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </nav>
       </header>
+
+      {isSidebarOpen ? (
+        <div className="sidebar-layer">
+          <button
+            className="sidebar-backdrop"
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="بستن منو"
+          />
+
+          <aside
+            className="site-sidebar"
+            id="site-sidebar"
+            dir="rtl"
+            aria-label="منوی سایت"
+          >
+            <div className="sidebar-heading">
+              <h2>منوی سایت</h2>
+              <button
+                className="sidebar-close"
+                type="button"
+                onClick={() => setIsSidebarOpen(false)}
+                aria-label="بستن منو"
+              >
+                <X size={20} aria-hidden="true" />
+              </button>
+            </div>
+
+            <section className="sidebar-section" aria-labelledby="sidebar-categories-title">
+              <h3 id="sidebar-categories-title">دسته‌بندی</h3>
+              <div className="sidebar-category-list">
+                {['همه', 'سیاسی', 'اقتصادی', 'ورزشی', 'فناوری'].map((category) => (
+                  <button
+                    className={
+                      selectedCategory === category
+                        ? 'sidebar-category-button sidebar-category-button-active'
+                        : 'sidebar-category-button'
+                    }
+                    key={category}
+                    type="button"
+                    onClick={() => {
+                      if (!(selectedCategory === category && activeView === 'latest')) {
+                        setIsLoading(true)
+                        setError('')
+                        setLoadMoreError('')
+                        setActiveView('latest')
+                        setSelectedSource('همه')
+                        setSelectedCategory(category)
+                      }
+                      setIsSidebarOpen(false)
+                    }}
+                    aria-pressed={selectedCategory === category}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </section>
+          </aside>
+        </div>
+      ) : null}
 
       <main id="top">
         <section
@@ -1792,39 +1827,6 @@ function NewsApp({ signedInUser, onSignOut }) {
 
               <kbd>⌕</kbd>
             </label>
-
-            {activeView === 'latest' ? (
-              <div
-                className="category-filter"
-                role="group"
-                aria-label="دسته‌بندی خبرها"
-              >
-                {[
-                  'همه',
-                  'سیاسی',
-                  'اقتصادی',
-                  'ورزشی',
-                  'فناوری',
-                ].map((category) => (
-                  <button
-                    className={
-                      selectedCategory === category
-                        ? 'source-tab source-tab-active'
-                        : 'source-tab'
-                    }
-                    key={category}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory(category)
-                      setIsLoading(true)
-                    }}
-                    aria-pressed={selectedCategory === category}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            ) : null}
 
             <div className="date-filter">
               <button
