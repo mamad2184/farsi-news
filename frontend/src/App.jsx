@@ -485,6 +485,7 @@ function NewsApp({ signedInUser, onSignOut }) {
   ] = useState('همه')
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isCategoryExpanded, setIsCategoryExpanded] = useState(false)
 
   const [activeView, setActiveView] =
     useState('latest')
@@ -1401,20 +1402,33 @@ function NewsApp({ signedInUser, onSignOut }) {
     <div className="app-shell">
       <header className="site-header">
       <div className="topbar">
-        <a
-          className="brand"
-          href="#top"
-          aria-label="خبرنما، صفحه نخست"
-        >
-          <span className="brand-mark">
-            <Newspaper
-              size={20}
-              strokeWidth={1.8}
-            />
-          </span>
+        <div className="brand-group" dir="rtl">
+          <button
+            className="sidebar-toggle"
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="بازکردن منوی سایت"
+            aria-expanded={isSidebarOpen}
+            aria-controls="site-sidebar"
+          >
+            <Menu size={22} aria-hidden="true" />
+          </button>
 
-          <span>خبرنما</span>
-        </a>
+          <a
+            className="brand"
+            href="#top"
+            aria-label="خبرنما، صفحه نخست"
+          >
+            <span className="brand-mark">
+              <Newspaper
+                size={20}
+                strokeWidth={1.8}
+              />
+            </span>
+
+            <span>خبرنما</span>
+          </a>
+        </div>
 
         <nav
           className="top-nav"
@@ -1473,17 +1487,6 @@ function NewsApp({ signedInUser, onSignOut }) {
         </nav>
 
         <div className="top-actions">
-          <button
-            className="sidebar-toggle"
-            type="button"
-            onClick={() => setIsSidebarOpen(true)}
-            aria-label="بازکردن منوی سایت"
-            aria-expanded={isSidebarOpen}
-            aria-controls="site-sidebar"
-          >
-            <Menu size={22} aria-hidden="true" />
-          </button>
-
           <button
             className="theme-toggle"
             type="button"
@@ -1561,9 +1564,24 @@ function NewsApp({ signedInUser, onSignOut }) {
             </div>
 
             <section className="sidebar-section" aria-labelledby="sidebar-categories-title">
-              <h3 id="sidebar-categories-title">دسته‌بندی</h3>
-              <div className="sidebar-category-list">
-                {['همه', 'سیاسی', 'اقتصادی', 'ورزشی', 'فناوری'].map((category) => (
+              <button
+                className="sidebar-section-toggle"
+                id="sidebar-categories-title"
+                type="button"
+                aria-expanded={isCategoryExpanded}
+                aria-controls="sidebar-category-list"
+                onClick={() => setIsCategoryExpanded((expanded) => !expanded)}
+              >
+                <span>دسته‌بندی</span>
+                <ChevronDown
+                  size={17}
+                  aria-hidden="true"
+                  className={isCategoryExpanded ? 'sidebar-section-chevron sidebar-section-chevron-open' : 'sidebar-section-chevron'}
+                />
+              </button>
+              {isCategoryExpanded ? (
+                <div className="sidebar-category-list" id="sidebar-category-list">
+                  {['همه', 'سیاسی', 'اقتصادی', 'ورزشی', 'فناوری'].map((category) => (
                   <button
                     className={
                       selectedCategory === category
@@ -1591,8 +1609,9 @@ function NewsApp({ signedInUser, onSignOut }) {
                   >
                     {category}
                   </button>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : null}
             </section>
           </aside>
         </div>
@@ -1731,10 +1750,11 @@ function NewsApp({ signedInUser, onSignOut }) {
               </p>
 
               <h2 id="latest-heading">
-                {activeView ===
-                'saved'
+                {activeView === 'saved'
                   ? 'خبرهای نشان‌شده'
-                  : 'تازه‌ترین خبرها'}{' '}
+                  : selectedCategory === 'همه'
+                    ? 'تازه‌ترین خبرها'
+                    : `اخبار ${selectedCategory}`}{' '}
                 <span>
                   {activeView ===
                   'latest'
