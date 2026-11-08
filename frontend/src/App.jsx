@@ -1575,6 +1575,10 @@ function NewsApp({ signedInUser, onSignOut }) {
                     onClick={() => {
                       if (!(selectedCategory === category && activeView === 'latest')) {
                         setIsLoading(true)
+                        setIsLoadingMore(false)
+                        setArticles([])
+                        setTotalCount(0)
+                        setNextPage(null)
                         setError('')
                         setLoadMoreError('')
                         setActiveView('latest')
