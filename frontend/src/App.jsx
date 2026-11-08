@@ -835,11 +835,7 @@ function NewsApp({ signedInUser, onSignOut }) {
             }
           })
       },
-      searchQuery ||
-        sourceFilter ||
-        categoryFilter
-        ? 300
-        : 0,
+      searchQuery ? 300 : 0,
     )
 
     return () => {
@@ -1400,7 +1396,8 @@ function NewsApp({ signedInUser, onSignOut }) {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
+      <header className="site-header">
+      <div className="topbar">
         <a
           className="brand"
           href="#top"
@@ -1518,6 +1515,48 @@ function NewsApp({ signedInUser, onSignOut }) {
             ) : null}
           </div>
         </div>
+      </div>
+
+        <nav
+          className="category-nav"
+          aria-label="دسته‌بندی خبرها"
+        >
+          <div
+            className="category-nav-inner"
+            role="group"
+            aria-label="انتخاب دسته‌بندی"
+          >
+            {['همه', 'سیاسی', 'اقتصادی', 'ورزشی', 'فناوری'].map((category) => (
+              <button
+                className={
+                  selectedCategory === category
+                    ? 'category-nav-button category-nav-button-active'
+                    : 'category-nav-button'
+                }
+                key={category}
+                type="button"
+                onClick={() => {
+                  if (
+                    selectedCategory === category &&
+                    activeView === 'latest'
+                  ) {
+                    return
+                  }
+
+                  setIsLoading(true)
+                  setError('')
+                  setLoadMoreError('')
+                  setActiveView('latest')
+                  setSelectedSource('همه')
+                  setSelectedCategory(category)
+                }}
+                aria-pressed={selectedCategory === category}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </nav>
       </header>
 
       <main id="top">
