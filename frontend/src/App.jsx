@@ -478,6 +478,11 @@ function NewsApp({ signedInUser, onSignOut }) {
     setSelectedSource,
   ] = useState('همه')
 
+  const [
+    selectedCategory,
+    setSelectedCategory,
+  ] = useState('همه')
+
   const [activeView, setActiveView] =
     useState('latest')
 
@@ -743,6 +748,10 @@ function NewsApp({ signedInUser, onSignOut }) {
       selectedSource === 'همه'
         ? ''
         : selectedSource
+    const categoryFilter =
+      selectedCategory === 'همه'
+        ? ''
+        : selectedCategory
 
     const timeout = window.setTimeout(
       () => {
@@ -751,6 +760,7 @@ function NewsApp({ signedInUser, onSignOut }) {
           pageSize: NEWS_PAGE_SIZE,
           query: searchQuery,
           source: sourceFilter,
+          category: categoryFilter,
           from: dateFrom,
           daysAgo: relativeDays,
           signal: controller.signal,
@@ -791,6 +801,7 @@ function NewsApp({ signedInUser, onSignOut }) {
             if (
               !searchQuery &&
               !sourceFilter &&
+              !categoryFilter &&
               !dateFrom &&
               !dateTo &&
               !relativeDays
@@ -825,7 +836,8 @@ function NewsApp({ signedInUser, onSignOut }) {
           })
       },
       searchQuery ||
-        sourceFilter
+        sourceFilter ||
+        categoryFilter
         ? 300
         : 0,
     )
@@ -838,6 +850,7 @@ function NewsApp({ signedInUser, onSignOut }) {
     activeView,
     query,
     selectedSource,
+    selectedCategory,
     dateFrom,
     dateTo,
     relativeDays,
@@ -921,6 +934,10 @@ function NewsApp({ signedInUser, onSignOut }) {
         selectedSource === 'همه'
           ? ''
           : selectedSource
+      const categoryFilter =
+        selectedCategory === 'همه'
+          ? ''
+          : selectedCategory
 
       const data = await requestNews({
         page: 1,
@@ -932,6 +949,10 @@ function NewsApp({ signedInUser, onSignOut }) {
         source:
           activeView === 'latest'
             ? sourceFilter
+            : '',
+        category:
+          activeView === 'latest'
+            ? categoryFilter
             : '',
         from:
           activeView === 'latest'
@@ -977,6 +998,7 @@ function NewsApp({ signedInUser, onSignOut }) {
         activeView !== 'latest' ||
         (!query.trim() &&
           !sourceFilter &&
+          !categoryFilter &&
           !dateFrom &&
           !dateTo &&
           !relativeDays)
@@ -1016,6 +1038,10 @@ function NewsApp({ signedInUser, onSignOut }) {
         selectedSource === 'همه'
           ? ''
           : selectedSource
+      const categoryFilter =
+        selectedCategory === 'همه'
+          ? ''
+          : selectedCategory
 
       const data =
         await requestNews({
@@ -1023,6 +1049,7 @@ function NewsApp({ signedInUser, onSignOut }) {
           pageSize: NEWS_PAGE_SIZE,
           query: query.trim(),
           source: sourceFilter,
+          category: categoryFilter,
           from: dateFrom,
           daysAgo: relativeDays,
         })
@@ -1071,6 +1098,7 @@ function NewsApp({ signedInUser, onSignOut }) {
       if (
         !query.trim() &&
         !sourceFilter &&
+        !categoryFilter &&
         !dateFrom &&
         !dateTo &&
         !relativeDays
@@ -1122,6 +1150,7 @@ function NewsApp({ signedInUser, onSignOut }) {
       view === 'latest',
     )
     setSelectedSource('همه')
+    setSelectedCategory('همه')
     setQuery('')
     setDateFrom('')
     setDateTo('')
@@ -1724,6 +1753,39 @@ function NewsApp({ signedInUser, onSignOut }) {
 
               <kbd>⌕</kbd>
             </label>
+
+            {activeView === 'latest' ? (
+              <div
+                className="category-filter"
+                role="group"
+                aria-label="دسته‌بندی خبرها"
+              >
+                {[
+                  'همه',
+                  'سیاسی',
+                  'اقتصادی',
+                  'ورزشی',
+                  'فناوری',
+                ].map((category) => (
+                  <button
+                    className={
+                      selectedCategory === category
+                        ? 'source-tab source-tab-active'
+                        : 'source-tab'
+                    }
+                    key={category}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(category)
+                      setIsLoading(true)
+                    }}
+                    aria-pressed={selectedCategory === category}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            ) : null}
 
             <div className="date-filter">
               <button

@@ -9,6 +9,7 @@ export async function requestNews({
   pageSize = 50,
   query = '',
   source = '',
+  category = '',
   from = '',
   to = '',
   daysAgo = '',
@@ -21,6 +22,7 @@ export async function requestNews({
 
   const normalizedQuery = query.trim()
   const normalizedSource = source.trim()
+  const normalizedCategory = category.trim()
   const normalizedFrom = from.trim()
   const normalizedTo = to.trim()
   const normalizedDaysAgo = String(daysAgo).trim()
@@ -31,6 +33,10 @@ export async function requestNews({
 
   if (normalizedSource) {
     params.set('source', normalizedSource)
+  }
+
+  if (normalizedCategory) {
+    params.set('category', normalizedCategory)
   }
 
   if (normalizedFrom) {
