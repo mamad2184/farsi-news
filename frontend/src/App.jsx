@@ -1744,7 +1744,7 @@ function NewsApp({ signedInUser, onSignOut }) {
           aria-labelledby="latest-heading"
         >
           <div className="section-heading">
-            <div>
+            <div className="section-heading-main">
               <p className="section-kicker">
                 خواندنی‌های امروز
               </p>
@@ -1766,6 +1766,38 @@ function NewsApp({ signedInUser, onSignOut }) {
                       )}
                 </span>
               </h2>
+
+              <div className="heading-category-control">
+                <label htmlFor="heading-category-select">
+                  نمایش خبرهای دسته
+                </label>
+                <select
+                  id="heading-category-select"
+                  value={selectedCategory}
+                  disabled={activeView === 'saved'}
+                  onChange={(event) => {
+                    const category = event.target.value
+                    if (category !== selectedCategory || activeView !== 'latest') {
+                      setIsLoading(true)
+                      setIsLoadingMore(false)
+                      setArticles([])
+                      setTotalCount(0)
+                      setNextPage(null)
+                      setError('')
+                      setLoadMoreError('')
+                      setActiveView('latest')
+                      setSelectedSource('همه')
+                      setSelectedCategory(category)
+                    }
+                  }}
+                >
+                  {['همه', 'سیاسی', 'اقتصادی', 'ورزشی', 'فناوری'].map((category) => (
+                    <option key={category} value={category}>
+                      {category === 'همه' ? 'همهٔ دسته‌ها' : category}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="feed-actions">
