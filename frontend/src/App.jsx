@@ -495,6 +495,8 @@ function NewsApp({ signedInUser, onSignOut }) {
     setSelectedArticle,
   ] = useState(null)
 
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false)
+
   const [
     isLoadingDetails,
     setIsLoadingDetails,
@@ -869,7 +871,11 @@ function NewsApp({ signedInUser, onSignOut }) {
 
     function handleReaderKeys(event) {
       if (event.key === 'Escape') {
-        closeReader()
+        if (isImageZoomOpen) {
+          setIsImageZoomOpen(false)
+        } else {
+          closeReader()
+        }
         return
       }
 
@@ -879,7 +885,7 @@ function NewsApp({ signedInUser, onSignOut }) {
 
       const focusable = [
         ...document.querySelectorAll(
-          '.reader-dialog a[href], .reader-dialog button:not(:disabled)',
+          '.reader-dialog a[href], .reader-dialog button:not(:disabled), .image-zoom-close',
         ),
       ]
 
@@ -922,7 +928,7 @@ function NewsApp({ signedInUser, onSignOut }) {
 
       previousFocusRef.current?.focus()
     }
-  }, [selectedArticle])
+  }, [selectedArticle, isImageZoomOpen])
 
   async function refreshNews() {
     setIsLoading(true)
@@ -1169,6 +1175,7 @@ function NewsApp({ signedInUser, onSignOut }) {
       document.activeElement
 
     setShareStatus('')
+    setIsImageZoomOpen(false)
     setSelectedArticle(article)
     setDetailError('')
     setIsLoadingDetails(true)
@@ -1215,6 +1222,7 @@ function NewsApp({ signedInUser, onSignOut }) {
   function closeReader() {
     detailRequestRef.current?.abort()
     setSelectedArticle(null)
+    setIsImageZoomOpen(false)
     setIsLoadingDetails(false)
   }
 
@@ -1793,7 +1801,7 @@ function NewsApp({ signedInUser, onSignOut }) {
                 >
                   {['همه', 'سیاسی', 'اقتصادی', 'ورزشی', 'فناوری'].map((category) => (
                     <option key={category} value={category}>
-                      {category === 'همه' ? 'همهٔ دسته‌ها' : category}
+                      {category === 'همه' ? 'همه دسته‌ها' : category}
                     </option>
                   ))}
                 </select>
@@ -1893,7 +1901,7 @@ function NewsApp({ signedInUser, onSignOut }) {
                 onClick={() => setIsDateFilterOpen((open) => !open)}
               >
                 <Clock3 size={16} aria-hidden="true" />
-                <span>بازهٔ زمانی</span>
+                <span>بازه زمانی</span>
                 {relativeDays !== '' ? (
                   <span className="date-filter-active">
                     {['امروز', 'دیروز', '۲ روز پیش', '۳ روز پیش', '۴ روز پیش', '۵ روز پیش', '۶ روز پیش', '۷ روز پیش'][Number(relativeDays)]}
@@ -1907,7 +1915,7 @@ function NewsApp({ signedInUser, onSignOut }) {
                   className="date-filter-controls relative-date-controls"
                   id="date-filter-panel"
                   role="group"
-                  aria-label="فیلتر بازهٔ زمانی"
+                  aria-label="فیلتر بازه زمانی"
                 >
                   <label className="relative-date-select">
                     <span>نمایش خبرهای روز</span>
@@ -1921,7 +1929,7 @@ function NewsApp({ signedInUser, onSignOut }) {
                         if (activeView === 'latest') setIsLoading(true)
                       }}
                     >
-                      <option value="">همهٔ روزها</option>
+                      <option value="">همه روزها</option>
                       <option value="0">امروز</option>
                       <option value="1">دیروز</option>
                       <option value="2">۲ روز پیش</option>
@@ -2071,7 +2079,7 @@ function NewsApp({ signedInUser, onSignOut }) {
 
               <p>
                 خبرهایی را که
-                می‌خواهید بعداً
+                می‌خواهید بعدا
                 بخوانید، ذخیره
                 کنید.
               </p>
@@ -2373,15 +2381,21 @@ function NewsApp({ signedInUser, onSignOut }) {
 
             {selectedArticle.image ? (
               <div className="reader-image">
-                <img
-                  src={
-                    selectedArticle.image
-                  }
-                  alt={
-                    selectedArticle.title
-                  }
-                  decoding="async"
-                />
+                <button
+                  className="reader-image-button"
+                  type="button"
+                  onClick={() => setIsImageZoomOpen(true)}
+                  aria-label="نمایش تصویر خبر در اندازه بزرگ"
+                >
+                  <img
+                    src={selectedArticle.image}
+                    alt={selectedArticle.title}
+                    decoding="async"
+                  />
+                  <span className="reader-image-hint">
+                    برای دیدن تصویر بزرگ‌تر کلیک کنید
+                  </span>
+                </button>
               </div>
             ) : null}
 
@@ -2478,6 +2492,30 @@ function NewsApp({ signedInUser, onSignOut }) {
               ) : null}
             </div>
           </section>
+          {isImageZoomOpen && selectedArticle.image ? (
+            <div
+              className="image-zoom-backdrop"
+              role="dialog"
+              aria-modal="true"
+              aria-label="تصویر بزرگ خبر"
+              onClick={() => setIsImageZoomOpen(false)}
+            >
+              <button
+                className="image-zoom-close"
+                type="button"
+                autoFocus
+                onClick={() => setIsImageZoomOpen(false)}
+                aria-label="بستن تصویر"
+              >
+                <X size={24} aria-hidden="true" />
+              </button>
+              <img
+                src={selectedArticle.image}
+                alt={selectedArticle.title}
+                onClick={(event) => event.stopPropagation()}
+              />
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
