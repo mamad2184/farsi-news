@@ -253,6 +253,13 @@ class Command(BaseCommand):
                 skipped_duplicate += 1
                 continue
 
+            # Extra duplicate check: prevent the same URL from being saved twice.
+            if News.objects.filter(
+                url=url
+            ).exists():
+                skipped_duplicate += 1
+                continue
+
             published_at = self.parse_datetime(
                 item.get("published_at")
             )
